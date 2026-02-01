@@ -217,6 +217,10 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.1.8 (2025-02-01)
+- Refactor: enabled toggle via DeviceInfo enabled prop + ENABLE_DISABLE action
+- Removed controls, using dm-utils built-in enable/disable icon instead
+
 ### 0.1.7 (2025-02-01)
 - Fix: control uses channel grouping for visible description
 
