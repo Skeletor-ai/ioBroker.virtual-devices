@@ -217,6 +217,12 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.3.0 (2025-02-01)
+- Feature: separate time windows per weekday (Mon–Sun each with own from/until)
+- Empty day while others are configured = day disabled
+- All days empty = 24/7 (no restriction)
+- Replaces global time window + checkboxes
+
 ### 0.2.1 (2025-02-01)
 - Feature: weekday selection for schedule (Mon–Sun checkboxes)
 - All days enabled by default

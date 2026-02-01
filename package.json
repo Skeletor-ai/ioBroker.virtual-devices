@@ -1,6 +1,6 @@
 {
   "name": "iobroker.virtual-devices",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Create virtual devices from existing datapoints with plugin-based logic",
   "author": {
     "name": "skeletor-ai",

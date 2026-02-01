@@ -304,23 +304,28 @@ tests.unit(path.join(__dirname, '..'), {
                 await plugin.onDestroy(ctx);
             });
 
-            it('should not turn on outside schedule window', async () => {
+            it('should not turn on outside per-day schedule window', async () => {
                 const { SmartDehumidifierPlugin } = require('../plugins/smart-dehumidifier');
                 const plugin = new SmartDehumidifierPlugin();
                 const states = {};
 
-                // Set schedule to a window that does NOT include current time
+                // Set a schedule for today's day-of-week that does NOT include current time
                 const now = new Date();
-                const pastStart = `${String((now.getHours() + 2) % 24).padStart(2, '0')}:00`;
-                const pastEnd = `${String((now.getHours() + 4) % 24).padStart(2, '0')}:00`;
+                const dayPrefixes = ['scheduleSun', 'scheduleMon', 'scheduleTue', 'scheduleWed', 'scheduleThu', 'scheduleFri', 'scheduleSat'];
+                const todayPrefix = dayPrefixes[now.getDay()];
+                const futureStart = `${String((now.getHours() + 2) % 24).padStart(2, '0')}:00`;
+                const futureEnd = `${String((now.getHours() + 4) % 24).padStart(2, '0')}:00`;
+
+                const config = {
+                    targetHumidity: 55, humidityHysteresis: 3,
+                    tankFullPowerThreshold: 5, tankFullDelay: 60,
+                };
+                config[`${todayPrefix}Start`] = futureStart;
+                config[`${todayPrefix}End`] = futureEnd;
 
                 const ctx = {
                     deviceId: 'test-dehum-schedule-1',
-                    config: {
-                        targetHumidity: 55, humidityHysteresis: 3,
-                        tankFullPowerThreshold: 5, tankFullDelay: 60,
-                        scheduleStart: pastStart, scheduleEnd: pastEnd,
-                    },
+                    config,
                     inputs: { humiditySensor: 'sensor.0.humidity', powerSwitch: 'switch.0.power' },
                     getInputState: async () => null,
                     setOutputState: async (id, val) => { states[id] = val; },
@@ -345,7 +350,6 @@ tests.unit(path.join(__dirname, '..'), {
                     config: {
                         targetHumidity: 55, humidityHysteresis: 3,
                         tankFullPowerThreshold: 5, tankFullDelay: 60,
-                        scheduleStart: '', scheduleEnd: '',
                     },
                     inputs: { humiditySensor: 'sensor.0.humidity', powerSwitch: 'switch.0.power' },
                     getInputState: async () => null,
@@ -361,21 +365,26 @@ tests.unit(path.join(__dirname, '..'), {
                 await plugin.onDestroy(ctx);
             });
 
-            it('should not turn on when today is disabled in schedule', async () => {
+            it('should not turn on when today has no schedule but other days do', async () => {
                 const { SmartDehumidifierPlugin } = require('../plugins/smart-dehumidifier');
                 const plugin = new SmartDehumidifierPlugin();
                 const states = {};
 
-                // Disable all days → should never run
+                // Configure a schedule for a DIFFERENT day only
+                const now = new Date();
+                const dayPrefixes = ['scheduleSun', 'scheduleMon', 'scheduleTue', 'scheduleWed', 'scheduleThu', 'scheduleFri', 'scheduleSat'];
+                const otherDayPrefix = dayPrefixes[(now.getDay() + 1) % 7]; // tomorrow
+
+                const config = {
+                    targetHumidity: 55, humidityHysteresis: 3,
+                    tankFullPowerThreshold: 5, tankFullDelay: 60,
+                };
+                config[`${otherDayPrefix}Start`] = '08:00';
+                config[`${otherDayPrefix}End`] = '20:00';
+
                 const ctx = {
                     deviceId: 'test-dehum-schedule-3',
-                    config: {
-                        targetHumidity: 55, humidityHysteresis: 3,
-                        tankFullPowerThreshold: 5, tankFullDelay: 60,
-                        scheduleStart: '', scheduleEnd: '',
-                        scheduleMon: false, scheduleTue: false, scheduleWed: false,
-                        scheduleThu: false, scheduleFri: false, scheduleSat: false, scheduleSun: false,
-                    },
+                    config,
                     inputs: { humiditySensor: 'sensor.0.humidity', powerSwitch: 'switch.0.power' },
                     getInputState: async () => null,
                     setOutputState: async (id, val) => { states[id] = val; },
@@ -386,7 +395,7 @@ tests.unit(path.join(__dirname, '..'), {
 
                 await plugin.onInit(ctx);
                 await plugin.onInputChange(ctx, 'humiditySensor', { val: 80, ack: true, ts: Date.now(), lc: Date.now(), from: 'test', q: 0 });
-                assert.strictEqual(states.running, false, 'Should NOT turn on when all days disabled');
+                assert.strictEqual(states.running, false, 'Should NOT turn on — today has no schedule while other days do');
                 await plugin.onDestroy(ctx);
             });
         });

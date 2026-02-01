@@ -152,52 +152,20 @@ class SmartDehumidifierPlugin {
                 min: 10,
                 max: 600,
             },
-            scheduleStart: {
-                type: 'text',
-                label: { en: 'Allowed from (HH:MM)', de: 'Erlaubt ab (HH:MM)' },
-                help: {
-                    en: 'Start time for automatic operation. Leave empty for 24/7. Overnight windows supported (e.g. 22:00–06:00).',
-                    de: 'Startzeit für Automatikbetrieb. Leer lassen für 24/7. Über-Nacht-Fenster möglich (z.B. 22:00–06:00).',
-                },
-                maxLength: 5,
-            },
-            scheduleEnd: {
-                type: 'text',
-                label: { en: 'Allowed until (HH:MM)', de: 'Erlaubt bis (HH:MM)' },
-                help: {
-                    en: 'End time for automatic operation. Leave empty for 24/7.',
-                    de: 'Endzeit für Automatikbetrieb. Leer lassen für 24/7.',
-                },
-                maxLength: 5,
-            },
-            scheduleMon: {
-                type: 'checkbox',
-                label: { en: 'Monday', de: 'Montag' },
-            },
-            scheduleTue: {
-                type: 'checkbox',
-                label: { en: 'Tuesday', de: 'Dienstag' },
-            },
-            scheduleWed: {
-                type: 'checkbox',
-                label: { en: 'Wednesday', de: 'Mittwoch' },
-            },
-            scheduleThu: {
-                type: 'checkbox',
-                label: { en: 'Thursday', de: 'Donnerstag' },
-            },
-            scheduleFri: {
-                type: 'checkbox',
-                label: { en: 'Friday', de: 'Freitag' },
-            },
-            scheduleSat: {
-                type: 'checkbox',
-                label: { en: 'Saturday', de: 'Samstag' },
-            },
-            scheduleSun: {
-                type: 'checkbox',
-                label: { en: 'Sunday', de: 'Sonntag' },
-            },
+            scheduleMonStart: { type: 'text', label: { en: 'Mon from', de: 'Mo von' }, maxLength: 5 },
+            scheduleMonEnd:   { type: 'text', label: { en: 'Mon until', de: 'Mo bis' }, maxLength: 5 },
+            scheduleTueStart: { type: 'text', label: { en: 'Tue from', de: 'Di von' }, maxLength: 5 },
+            scheduleTueEnd:   { type: 'text', label: { en: 'Tue until', de: 'Di bis' }, maxLength: 5 },
+            scheduleWedStart: { type: 'text', label: { en: 'Wed from', de: 'Mi von' }, maxLength: 5 },
+            scheduleWedEnd:   { type: 'text', label: { en: 'Wed until', de: 'Mi bis' }, maxLength: 5 },
+            scheduleThuStart: { type: 'text', label: { en: 'Thu from', de: 'Do von' }, maxLength: 5 },
+            scheduleThuEnd:   { type: 'text', label: { en: 'Thu until', de: 'Do bis' }, maxLength: 5 },
+            scheduleFriStart: { type: 'text', label: { en: 'Fri from', de: 'Fr von' }, maxLength: 5 },
+            scheduleFriEnd:   { type: 'text', label: { en: 'Fri until', de: 'Fr bis' }, maxLength: 5 },
+            scheduleSatStart: { type: 'text', label: { en: 'Sat from', de: 'Sa von' }, maxLength: 5 },
+            scheduleSatEnd:   { type: 'text', label: { en: 'Sat until', de: 'Sa bis' }, maxLength: 5 },
+            scheduleSunStart: { type: 'text', label: { en: 'Sun from', de: 'So von' }, maxLength: 5 },
+            scheduleSunEnd:   { type: 'text', label: { en: 'Sun until', de: 'So bis' }, maxLength: 5 },
         };
 
         /** @type {Record<string, any>} */
@@ -206,15 +174,13 @@ class SmartDehumidifierPlugin {
             humidityHysteresis: 3,
             tankFullPowerThreshold: 5,
             tankFullDelay: 60,
-            scheduleStart: '',
-            scheduleEnd: '',
-            scheduleMon: true,
-            scheduleTue: true,
-            scheduleWed: true,
-            scheduleThu: true,
-            scheduleFri: true,
-            scheduleSat: true,
-            scheduleSun: true,
+            scheduleMonStart: '', scheduleMonEnd: '',
+            scheduleTueStart: '', scheduleTueEnd: '',
+            scheduleWedStart: '', scheduleWedEnd: '',
+            scheduleThuStart: '', scheduleThuEnd: '',
+            scheduleFriStart: '', scheduleFriEnd: '',
+            scheduleSatStart: '', scheduleSatEnd: '',
+            scheduleSunStart: '', scheduleSunEnd: '',
         };
 
         // -- Output states -----------------------------------------------------
@@ -405,27 +371,44 @@ class SmartDehumidifierPlugin {
      * @param {import('../lib/plugin-interface').PluginContext} ctx
      * @returns {boolean}
      */
+    /**
+     * Per-day schedule check.
+     * Each day has its own start/end time (HH:MM).
+     * - Both empty for a day → that day has no restriction (24h).
+     * - Both set → allowed only during that window.
+     * - If ALL 7 days are empty → 24/7 (no restriction at all).
+     * - A day with only start OR only end set → treated as no restriction for that day.
+     * - If other days have times but today is empty → today is disabled.
+     *
+     * @param {import('../lib/plugin-interface').PluginContext} ctx
+     * @returns {boolean}
+     */
     _isWithinSchedule(ctx) {
-        const startStr = String(ctx.config.scheduleStart || '').trim();
-        const endStr = String(ctx.config.scheduleEnd || '').trim();
-
-        // Day-of-week check: map JS getDay() (0=Sun..6=Sat) to config keys
-        const dayKeys = ['scheduleSun', 'scheduleMon', 'scheduleTue', 'scheduleWed', 'scheduleThu', 'scheduleFri', 'scheduleSat'];
+        // Map JS getDay() (0=Sun..6=Sat) to config key prefixes
+        const dayPrefixes = ['scheduleSun', 'scheduleMon', 'scheduleTue', 'scheduleWed', 'scheduleThu', 'scheduleFri', 'scheduleSat'];
         const now = new Date();
-        const todayKey = dayKeys[now.getDay()];
+        const todayPrefix = dayPrefixes[now.getDay()];
 
-        // If all days are true (or unset) → no day restriction
-        const anyDayConfigured = dayKeys.some((k) => ctx.config[k] === false);
-        if (anyDayConfigured) {
-            if (ctx.config[todayKey] === false) return false;
-        }
+        const todayStart = String(ctx.config[`${todayPrefix}Start`] || '').trim();
+        const todayEnd = String(ctx.config[`${todayPrefix}End`] || '').trim();
 
-        // No time schedule configured → allowed (day check already passed)
-        if (!startStr || !endStr) return true;
+        // Check if ANY day has a schedule configured
+        const anyDayConfigured = dayPrefixes.some((prefix) => {
+            const s = String(ctx.config[`${prefix}Start`] || '').trim();
+            const e = String(ctx.config[`${prefix}End`] || '').trim();
+            return s !== '' && e !== '';
+        });
 
+        // No day has a schedule → 24/7
+        if (!anyDayConfigured) return true;
+
+        // Other days have schedules but today has none → today is disabled
+        if (!todayStart || !todayEnd) return false;
+
+        // Today has a schedule → check time window
         const match = (s) => s.match(/^(\d{1,2}):(\d{2})$/);
-        const startMatch = match(startStr);
-        const endMatch = match(endStr);
+        const startMatch = match(todayStart);
+        const endMatch = match(todayEnd);
         if (!startMatch || !endMatch) return true; // invalid format → allow
 
         const currentMin = now.getHours() * 60 + now.getMinutes();
@@ -433,10 +416,9 @@ class SmartDehumidifierPlugin {
         const endMin = parseInt(endMatch[1], 10) * 60 + parseInt(endMatch[2], 10);
 
         if (startMin <= endMin) {
-            // Normal window: e.g. 08:00–20:00
             return currentMin >= startMin && currentMin < endMin;
         } else {
-            // Overnight window: e.g. 22:00–06:00
+            // Overnight: e.g. 22:00–06:00
             return currentMin >= startMin || currentMin < endMin;
         }
     }
