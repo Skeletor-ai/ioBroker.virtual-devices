@@ -153,8 +153,8 @@ registerPlugin(new MyPlugin());
 
 ## Data Structure
 
-- **Device configs**: `virtual-devices.0.devices.{deviceId}` (channel objects with config in `native`)
-- **Output states**: `virtual-devices.0.{deviceId}.{stateId}`
+- **Devices**: `virtual-devices.0.{deviceId}` (type: `device`, config stored in `native`)
+- **States**: `virtual-devices.0.{deviceId}.{stateId}` (type: `state`)
 
 ## Development
 
@@ -216,6 +216,12 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 6. Das virtuelle Gerät arbeitet sofort
 
 ## Changelog
+
+### 0.7.0 (2026-02-01)
+- Breaking: flat object structure — `instanz → device → states`
+- Device config now stored directly on device object (type: `device`) instead of separate channel under `devices/`
+- Removed `devices.` prefix from all object paths
+- Existing devices must be recreated after update (no migration)
 
 ### 0.6.0 (2025-02-01)
 - Feature: room assignment when creating/editing devices
