@@ -206,6 +206,10 @@ class SmartDehumidifierPlugin {
             {
                 id: 'enabled',
                 name: { en: 'Enabled', de: 'Aktiviert' },
+                description: {
+                    en: 'Enable/disable automatic dehumidifier control',
+                    de: 'Automatische Entfeuchtersteuerung ein-/ausschalten',
+                },
                 type: 'boolean',
                 role: 'switch.enable',
                 read: true,

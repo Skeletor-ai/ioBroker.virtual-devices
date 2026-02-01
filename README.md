@@ -217,6 +217,11 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.1.5 (2025-02-01)
+- Fix: UX — controls show description (what the switch does)
+- Fix: UX — device details show labeled values (`<b>Label:</b> Value`)
+- Fix: booleans in details displayed as ✅/❌
+
 ### 0.1.4 (2025-02-01)
 - Fix: device controls need handler + getStateHandler (dm-utils requirement)
 
