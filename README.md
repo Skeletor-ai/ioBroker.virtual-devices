@@ -217,6 +217,10 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.3.1 (2025-02-01)
+- Fix: schedule fields side-by-side (from|until per row) with grid layout
+- Added schedule section header
+
 ### 0.3.0 (2025-02-01)
 - Feature: separate time windows per weekday (Mon–Sun each with own from/until)
 - Empty day while others are configured = day disabled
