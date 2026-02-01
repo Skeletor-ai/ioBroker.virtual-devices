@@ -217,6 +217,12 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.2.0 (2025-02-01)
+- Feature: schedule window for dehumidifier (allowed from/until HH:MM)
+- Supports overnight windows (e.g. 22:00–06:00)
+- Empty schedule = 24/7 operation (default)
+- Auto turn-off when schedule window ends
+
 ### 0.1.8 (2025-02-01)
 - Refactor: enabled toggle via DeviceInfo enabled prop + ENABLE_DISABLE action
 - Removed controls, using dm-utils built-in enable/disable icon instead

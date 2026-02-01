@@ -303,6 +303,63 @@ tests.unit(path.join(__dirname, '..'), {
 
                 await plugin.onDestroy(ctx);
             });
+
+            it('should not turn on outside schedule window', async () => {
+                const { SmartDehumidifierPlugin } = require('../plugins/smart-dehumidifier');
+                const plugin = new SmartDehumidifierPlugin();
+                const states = {};
+
+                // Set schedule to a window that does NOT include current time
+                const now = new Date();
+                const pastStart = `${String((now.getHours() + 2) % 24).padStart(2, '0')}:00`;
+                const pastEnd = `${String((now.getHours() + 4) % 24).padStart(2, '0')}:00`;
+
+                const ctx = {
+                    deviceId: 'test-dehum-schedule-1',
+                    config: {
+                        targetHumidity: 55, humidityHysteresis: 3,
+                        tankFullPowerThreshold: 5, tankFullDelay: 60,
+                        scheduleStart: pastStart, scheduleEnd: pastEnd,
+                    },
+                    inputs: { humiditySensor: 'sensor.0.humidity', powerSwitch: 'switch.0.power' },
+                    getInputState: async () => null,
+                    setOutputState: async (id, val) => { states[id] = val; },
+                    getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
+                    log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+                    adapter: { setForeignStateAsync: async () => {} },
+                };
+
+                await plugin.onInit(ctx);
+                await plugin.onInputChange(ctx, 'humiditySensor', { val: 80, ack: true, ts: Date.now(), lc: Date.now(), from: 'test', q: 0 });
+                assert.strictEqual(states.running, false, 'Should NOT turn on outside schedule');
+                await plugin.onDestroy(ctx);
+            });
+
+            it('should allow operation with empty schedule (24/7)', async () => {
+                const { SmartDehumidifierPlugin } = require('../plugins/smart-dehumidifier');
+                const plugin = new SmartDehumidifierPlugin();
+                const states = {};
+
+                const ctx = {
+                    deviceId: 'test-dehum-schedule-2',
+                    config: {
+                        targetHumidity: 55, humidityHysteresis: 3,
+                        tankFullPowerThreshold: 5, tankFullDelay: 60,
+                        scheduleStart: '', scheduleEnd: '',
+                    },
+                    inputs: { humiditySensor: 'sensor.0.humidity', powerSwitch: 'switch.0.power' },
+                    getInputState: async () => null,
+                    setOutputState: async (id, val) => { states[id] = val; },
+                    getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
+                    log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+                    adapter: { setForeignStateAsync: async () => {} },
+                };
+
+                await plugin.onInit(ctx);
+                await plugin.onInputChange(ctx, 'humiditySensor', { val: 80, ack: true, ts: Date.now(), lc: Date.now(), from: 'test', q: 0 });
+                assert.strictEqual(states.running, true, 'Should turn on with empty schedule (24/7)');
+                await plugin.onDestroy(ctx);
+            });
         });
     },
 });

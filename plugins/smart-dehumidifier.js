@@ -152,6 +152,24 @@ class SmartDehumidifierPlugin {
                 min: 10,
                 max: 600,
             },
+            scheduleStart: {
+                type: 'text',
+                label: { en: 'Allowed from (HH:MM)', de: 'Erlaubt ab (HH:MM)' },
+                help: {
+                    en: 'Start time for automatic operation. Leave empty for 24/7. Overnight windows supported (e.g. 22:00–06:00).',
+                    de: 'Startzeit für Automatikbetrieb. Leer lassen für 24/7. Über-Nacht-Fenster möglich (z.B. 22:00–06:00).',
+                },
+                maxLength: 5,
+            },
+            scheduleEnd: {
+                type: 'text',
+                label: { en: 'Allowed until (HH:MM)', de: 'Erlaubt bis (HH:MM)' },
+                help: {
+                    en: 'End time for automatic operation. Leave empty for 24/7.',
+                    de: 'Endzeit für Automatikbetrieb. Leer lassen für 24/7.',
+                },
+                maxLength: 5,
+            },
         };
 
         /** @type {Record<string, any>} */
@@ -160,6 +178,8 @@ class SmartDehumidifierPlugin {
             humidityHysteresis: 3,
             tankFullPowerThreshold: 5,
             tankFullDelay: 60,
+            scheduleStart: '',
+            scheduleEnd: '',
         };
 
         // -- Output states -----------------------------------------------------
@@ -291,6 +311,14 @@ class SmartDehumidifierPlugin {
      */
     async onInterval(ctx) {
         const rt = getRuntime(ctx.deviceId);
+
+        // Turn off if schedule window has ended
+        if (rt.commandedOn && !this._isWithinSchedule(ctx)) {
+            ctx.log.info(`Schedule window ended for "${ctx.deviceId}" — turning OFF`);
+            await this._setSwitchState(ctx, false);
+            return;
+        }
+
         if (!rt.commandedOn) return;
 
         // Check for tank-full condition via sustained low power
@@ -335,6 +363,40 @@ class SmartDehumidifierPlugin {
     // ======================================================================
 
     /**
+     * Check if the current time is within the configured schedule window.
+     * Returns true if no schedule is configured (empty = 24/7).
+     * Supports overnight windows (e.g. 22:00–06:00).
+     *
+     * @param {import('../lib/plugin-interface').PluginContext} ctx
+     * @returns {boolean}
+     */
+    _isWithinSchedule(ctx) {
+        const startStr = String(ctx.config.scheduleStart || '').trim();
+        const endStr = String(ctx.config.scheduleEnd || '').trim();
+
+        // No schedule configured → always allowed
+        if (!startStr || !endStr) return true;
+
+        const match = (s) => s.match(/^(\d{1,2}):(\d{2})$/);
+        const startMatch = match(startStr);
+        const endMatch = match(endStr);
+        if (!startMatch || !endMatch) return true; // invalid format → allow
+
+        const now = new Date();
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+        const startMin = parseInt(startMatch[1], 10) * 60 + parseInt(startMatch[2], 10);
+        const endMin = parseInt(endMatch[1], 10) * 60 + parseInt(endMatch[2], 10);
+
+        if (startMin <= endMin) {
+            // Normal window: e.g. 08:00–20:00
+            return currentMin >= startMin && currentMin < endMin;
+        } else {
+            // Overnight window: e.g. 22:00–06:00
+            return currentMin >= startMin || currentMin < endMin;
+        }
+    }
+
+    /**
      * @param {import('../lib/plugin-interface').PluginContext} ctx
      * @param {number} humidity
      * @returns {Promise<void>}
@@ -351,12 +413,16 @@ class SmartDehumidifierPlugin {
         const target = Number(ctx.config.targetHumidity ?? 55);
         const hysteresis = Number(ctx.config.humidityHysteresis ?? 3);
         const rt = getRuntime(ctx.deviceId);
+        const inSchedule = this._isWithinSchedule(ctx);
 
-        if (humidity > target + hysteresis && !rt.commandedOn) {
+        if (humidity > target + hysteresis && !rt.commandedOn && inSchedule) {
             ctx.log.info(`Humidity ${humidity}% > ${target + hysteresis}% — turning ON`);
             await this._setSwitchState(ctx, true);
         } else if (humidity < target && rt.commandedOn) {
             ctx.log.info(`Humidity ${humidity}% < ${target}% — turning OFF`);
+            await this._setSwitchState(ctx, false);
+        } else if (!inSchedule && rt.commandedOn) {
+            ctx.log.info(`Outside schedule window — turning OFF`);
             await this._setSwitchState(ctx, false);
         }
     }
