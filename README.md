@@ -217,6 +217,12 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.4.0 (2025-02-01)
+- Feature: new Conditional Switch plugin
+- Rule-based switch with up to 4 conditions (AND logic)
+- Modifier input to dynamically change condition thresholds
+- 2 output switches, enabled/disabled toggle
+
 ### 0.3.2 (2025-02-01)
 - Fix: schedule time fields changed from free text to select dropdowns
 - 48 fixed time slots (every 30 min), no invalid input possible
@@ -279,3 +285,27 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 ## License
 
 MIT License — see [LICENSE](LICENSE)
+
+### Conditional Switch (Bedingter Schalter)
+
+Rule-based switch controller with configurable conditions and modifier support.
+
+**Inputs:**
+| Input | Required | Description |
+|-------|----------|-------------|
+| Switch 1 | ✅ | Primary output switch |
+| Switch 2 | ❌ | Secondary output switch |
+| Condition 1–4 | ❌ | Datapoints to evaluate |
+| Modifier | ❌ | Trigger for alternative condition values |
+
+**Per condition:**
+| Setting | Description |
+|---------|-------------|
+| Operator | >, <, >=, <=, ==, != |
+| Value | Normal threshold |
+| Alt. Value | Used when modifier is active (optional) |
+
+**Example — Fan with TV modifier:**
+- Condition 1: Temperature > 30°C (alt: > 40°C when TV on)
+- Condition 2: Door == true
+- Modifier: TV == true → activates alternative values

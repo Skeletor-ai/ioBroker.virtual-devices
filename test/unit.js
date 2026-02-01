@@ -399,5 +399,107 @@ tests.unit(path.join(__dirname, '..'), {
                 await plugin.onDestroy(ctx);
             });
         });
+
+        describe('Conditional Switch Logic', () => {
+            it('should turn on when all conditions are met', async () => {
+                const { ConditionalSwitchPlugin } = require('../plugins/conditional-switch');
+                const plugin = new ConditionalSwitchPlugin();
+                const states = {};
+                const foreignStates = {};
+
+                const ctx = {
+                    deviceId: 'test-cs-1',
+                    config: {
+                        condition1_operator: '>', condition1_value: '30', condition1_altValue: '',
+                        condition2_operator: '==', condition2_value: 'true', condition2_altValue: '',
+                        condition3_operator: '==', condition3_value: '', condition3_altValue: '',
+                        condition4_operator: '==', condition4_value: '', condition4_altValue: '',
+                        modifier_operator: '==', modifier_value: '',
+                        hysteresis: 0,
+                    },
+                    inputs: { switch1: 'fan.0.power', condition1: 'sensor.0.temp', condition2: 'sensor.0.door' },
+                    getInputState: async (id) => {
+                        if (id === 'condition1') return { val: 35 };
+                        if (id === 'condition2') return { val: true };
+                        return null;
+                    },
+                    setOutputState: async (id, val) => { states[id] = val; },
+                    getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
+                    log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+                    adapter: { setForeignStateAsync: async (id, val) => { foreignStates[id] = val; } },
+                };
+
+                await plugin.onInit(ctx);
+                assert.strictEqual(states.active, true, 'Should be active when all conditions met');
+                assert.strictEqual(foreignStates['fan.0.power'], true, 'Switch should be ON');
+                await plugin.onDestroy(ctx);
+            });
+
+            it('should not turn on when a condition fails', async () => {
+                const { ConditionalSwitchPlugin } = require('../plugins/conditional-switch');
+                const plugin = new ConditionalSwitchPlugin();
+                const states = {};
+                const foreignStates = {};
+
+                const ctx = {
+                    deviceId: 'test-cs-2',
+                    config: {
+                        condition1_operator: '>', condition1_value: '30', condition1_altValue: '',
+                        condition2_operator: '==', condition2_value: 'true', condition2_altValue: '',
+                        condition3_operator: '==', condition3_value: '', condition3_altValue: '',
+                        condition4_operator: '==', condition4_value: '', condition4_altValue: '',
+                        modifier_operator: '==', modifier_value: '',
+                        hysteresis: 0,
+                    },
+                    inputs: { switch1: 'fan.0.power', condition1: 'sensor.0.temp', condition2: 'sensor.0.door' },
+                    getInputState: async (id) => {
+                        if (id === 'condition1') return { val: 25 }; // below threshold
+                        if (id === 'condition2') return { val: true };
+                        return null;
+                    },
+                    setOutputState: async (id, val) => { states[id] = val; },
+                    getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
+                    log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+                    adapter: { setForeignStateAsync: async (id, val) => { foreignStates[id] = val; } },
+                };
+
+                await plugin.onInit(ctx);
+                assert.strictEqual(states.active, false, 'Should NOT be active when temp below threshold');
+                await plugin.onDestroy(ctx);
+            });
+
+            it('should use alternative value when modifier is active', async () => {
+                const { ConditionalSwitchPlugin } = require('../plugins/conditional-switch');
+                const plugin = new ConditionalSwitchPlugin();
+                const states = {};
+
+                const ctx = {
+                    deviceId: 'test-cs-3',
+                    config: {
+                        condition1_operator: '>', condition1_value: '30', condition1_altValue: '40',
+                        condition2_operator: '==', condition2_value: '', condition2_altValue: '',
+                        condition3_operator: '==', condition3_value: '', condition3_altValue: '',
+                        condition4_operator: '==', condition4_value: '', condition4_altValue: '',
+                        modifier_operator: '==', modifier_value: 'true',
+                        hysteresis: 0,
+                    },
+                    inputs: { switch1: 'fan.0.power', condition1: 'sensor.0.temp', modifier: 'tv.0.power' },
+                    getInputState: async (id) => {
+                        if (id === 'condition1') return { val: 35 }; // > 30 but < 40
+                        if (id === 'modifier') return { val: true }; // TV is on
+                        return null;
+                    },
+                    setOutputState: async (id, val) => { states[id] = val; },
+                    getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
+                    log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+                    adapter: { setForeignStateAsync: async () => {} },
+                };
+
+                await plugin.onInit(ctx);
+                assert.strictEqual(states.modifierActive, true, 'Modifier should be active');
+                assert.strictEqual(states.active, false, 'Should NOT be active — 35 > 40 is false with modifier');
+                await plugin.onDestroy(ctx);
+            });
+        });
     },
 });
