@@ -217,6 +217,12 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.6.0 (2025-02-01)
+- Feature: room assignment when creating/editing devices
+- Room picker (enum.rooms) in create wizard and edit form
+- Room assignment removed on device deletion
+- Room change on edit updates enum membership
+
 ### 0.5.0 (2025-02-01)
 - Breaking: Conditional Switch conditions now dynamic table (not fixed 4 slots)
 - Users can add/remove unlimited conditions via table UI
