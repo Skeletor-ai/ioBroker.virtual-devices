@@ -410,17 +410,16 @@ tests.unit(path.join(__dirname, '..'), {
                 const ctx = {
                     deviceId: 'test-cs-1',
                     config: {
-                        condition1_operator: '>', condition1_value: '30', condition1_altValue: '',
-                        condition2_operator: '==', condition2_value: 'true', condition2_altValue: '',
-                        condition3_operator: '==', condition3_value: '', condition3_altValue: '',
-                        condition4_operator: '==', condition4_value: '', condition4_altValue: '',
+                        conditions: [
+                            { objectId: 'sensor.0.temp', operator: '>', value: '30', altValue: '' },
+                            { objectId: 'sensor.0.door', operator: '==', value: 'true', altValue: '' },
+                        ],
                         modifier_operator: '==', modifier_value: '',
-                        hysteresis: 0,
                     },
-                    inputs: { switch1: 'fan.0.power', condition1: 'sensor.0.temp', condition2: 'sensor.0.door' },
+                    inputs: { switch1: 'fan.0.power' },
                     getInputState: async (id) => {
-                        if (id === 'condition1') return { val: 35 };
-                        if (id === 'condition2') return { val: true };
+                        if (id === '_cond_0') return { val: 35 };
+                        if (id === '_cond_1') return { val: true };
                         return null;
                     },
                     setOutputState: async (id, val) => { states[id] = val; },
@@ -439,28 +438,26 @@ tests.unit(path.join(__dirname, '..'), {
                 const { ConditionalSwitchPlugin } = require('../plugins/conditional-switch');
                 const plugin = new ConditionalSwitchPlugin();
                 const states = {};
-                const foreignStates = {};
 
                 const ctx = {
                     deviceId: 'test-cs-2',
                     config: {
-                        condition1_operator: '>', condition1_value: '30', condition1_altValue: '',
-                        condition2_operator: '==', condition2_value: 'true', condition2_altValue: '',
-                        condition3_operator: '==', condition3_value: '', condition3_altValue: '',
-                        condition4_operator: '==', condition4_value: '', condition4_altValue: '',
+                        conditions: [
+                            { objectId: 'sensor.0.temp', operator: '>', value: '30', altValue: '' },
+                            { objectId: 'sensor.0.door', operator: '==', value: 'true', altValue: '' },
+                        ],
                         modifier_operator: '==', modifier_value: '',
-                        hysteresis: 0,
                     },
-                    inputs: { switch1: 'fan.0.power', condition1: 'sensor.0.temp', condition2: 'sensor.0.door' },
+                    inputs: { switch1: 'fan.0.power' },
                     getInputState: async (id) => {
-                        if (id === 'condition1') return { val: 25 }; // below threshold
-                        if (id === 'condition2') return { val: true };
+                        if (id === '_cond_0') return { val: 25 }; // below threshold
+                        if (id === '_cond_1') return { val: true };
                         return null;
                     },
                     setOutputState: async (id, val) => { states[id] = val; },
                     getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
                     log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
-                    adapter: { setForeignStateAsync: async (id, val) => { foreignStates[id] = val; } },
+                    adapter: { setForeignStateAsync: async () => {} },
                 };
 
                 await plugin.onInit(ctx);
@@ -476,16 +473,14 @@ tests.unit(path.join(__dirname, '..'), {
                 const ctx = {
                     deviceId: 'test-cs-3',
                     config: {
-                        condition1_operator: '>', condition1_value: '30', condition1_altValue: '40',
-                        condition2_operator: '==', condition2_value: '', condition2_altValue: '',
-                        condition3_operator: '==', condition3_value: '', condition3_altValue: '',
-                        condition4_operator: '==', condition4_value: '', condition4_altValue: '',
+                        conditions: [
+                            { objectId: 'sensor.0.temp', operator: '>', value: '30', altValue: '40' },
+                        ],
                         modifier_operator: '==', modifier_value: 'true',
-                        hysteresis: 0,
                     },
-                    inputs: { switch1: 'fan.0.power', condition1: 'sensor.0.temp', modifier: 'tv.0.power' },
+                    inputs: { switch1: 'fan.0.power', modifier: 'tv.0.power' },
                     getInputState: async (id) => {
-                        if (id === 'condition1') return { val: 35 }; // > 30 but < 40
+                        if (id === '_cond_0') return { val: 35 }; // > 30 but < 40
                         if (id === 'modifier') return { val: true }; // TV is on
                         return null;
                     },

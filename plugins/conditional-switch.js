@@ -3,23 +3,23 @@
 /**
  * Conditional Switch plugin.
  *
- * Generic rule-based switch controller. Evaluates up to 4 conditions on
- * arbitrary datapoints. All conditions must be met (AND) to activate the
+ * Generic rule-based switch controller. Evaluates a dynamic list of conditions
+ * on arbitrary datapoints. All conditions must be met (AND) to activate the
  * output switches. An optional modifier input can change condition thresholds
  * dynamically (e.g., higher temperature when TV is running).
+ *
+ * Conditions are stored as a table (array) in config — the user can add/remove
+ * as many as needed.
  *
  * @module conditional-switch
  */
 
 // ---------------------------------------------------------------------------
-// Condition evaluation helpers
+// Helpers
 // ---------------------------------------------------------------------------
 
 /**
  * Parse a config value to match the type of the actual state value.
- * @param {any} stateVal - actual state value
- * @param {string} configVal - value from config (string)
- * @returns {any}
  */
 function parseValue(stateVal, configVal) {
     if (typeof stateVal === 'boolean') {
@@ -33,10 +33,6 @@ function parseValue(stateVal, configVal) {
 
 /**
  * Evaluate a single condition.
- * @param {any} actual - current state value
- * @param {string} operator - comparison operator
- * @param {any} target - target value (already parsed)
- * @returns {boolean}
  */
 function evaluate(actual, operator, target) {
     switch (operator) {
@@ -44,53 +40,44 @@ function evaluate(actual, operator, target) {
         case '<':  return actual < target;
         case '>=': return actual >= target;
         case '<=': return actual <= target;
-        case '==': return actual == target; // intentional loose comparison
-        case '!=': return actual != target; // intentional loose comparison
+        case '==': return actual == target; // eslint-disable-line eqeqeq
+        case '!=': return actual != target; // eslint-disable-line eqeqeq
         default:   return false;
     }
 }
 
 // ---------------------------------------------------------------------------
-// Operator options for config selects
+// Operator options
 // ---------------------------------------------------------------------------
 
 const OPERATOR_OPTIONS = [
-    { label: '> (greater than)',    value: '>' },
-    { label: '< (less than)',       value: '<' },
-    { label: '>= (greater/equal)',  value: '>=' },
-    { label: '<= (less/equal)',     value: '<=' },
-    { label: '== (equals)',         value: '==' },
-    { label: '!= (not equals)',     value: '!=' },
-];
-
-const BOOL_OPTIONS = [
-    { label: '—',    value: '' },
-    { label: 'true',  value: 'true' },
-    { label: 'false', value: 'false' },
+    { label: '> (greater)',    value: '>' },
+    { label: '< (less)',       value: '<' },
+    { label: '>= (greater/eq)', value: '>=' },
+    { label: '<= (less/eq)',   value: '<=' },
+    { label: '== (equals)',    value: '==' },
+    { label: '!= (not eq)',    value: '!=' },
 ];
 
 // ---------------------------------------------------------------------------
-// Plugin implementation
+// Plugin
 // ---------------------------------------------------------------------------
 
 class ConditionalSwitchPlugin {
     constructor() {
-        /** @type {string} */
         this.id = 'conditional-switch';
 
-        /** @type {Record<string,string>} */
         this.name = {
             en: 'Conditional Switch',
             de: 'Bedingter Schalter',
         };
 
-        /** @type {Record<string,string>} */
         this.description = {
-            en: 'Rule-based switch with configurable conditions and optional modifier',
-            de: 'Regelbasierter Schalter mit konfigurierbaren Bedingungen und optionalem Modifier',
+            en: 'Rule-based switch with flexible conditions and optional modifier',
+            de: 'Regelbasierter Schalter mit flexiblen Bedingungen und optionalem Modifier',
         };
 
-        // -- Input slots -------------------------------------------------------
+        // -- Input slots (only switches + modifier — conditions are dynamic) ---
 
         this.inputSlots = [
             {
@@ -108,34 +95,6 @@ class ConditionalSwitchPlugin {
                 filter: { type: 'state', common: { type: 'boolean' } },
             },
             {
-                id: 'condition1',
-                name: { en: 'Condition 1 input', de: 'Bedingung 1 Eingang' },
-                description: { en: 'Datapoint for condition 1', de: 'Datenpunkt für Bedingung 1' },
-                required: false,
-                filter: { type: 'state' },
-            },
-            {
-                id: 'condition2',
-                name: { en: 'Condition 2 input', de: 'Bedingung 2 Eingang' },
-                description: { en: 'Datapoint for condition 2', de: 'Datenpunkt für Bedingung 2' },
-                required: false,
-                filter: { type: 'state' },
-            },
-            {
-                id: 'condition3',
-                name: { en: 'Condition 3 input', de: 'Bedingung 3 Eingang' },
-                description: { en: 'Datapoint for condition 3', de: 'Datenpunkt für Bedingung 3' },
-                required: false,
-                filter: { type: 'state' },
-            },
-            {
-                id: 'condition4',
-                name: { en: 'Condition 4 input', de: 'Bedingung 4 Eingang' },
-                description: { en: 'Datapoint for condition 4', de: 'Datenpunkt für Bedingung 4' },
-                required: false,
-                filter: { type: 'state' },
-            },
-            {
                 id: 'modifier',
                 name: { en: 'Modifier input', de: 'Modifier Eingang' },
                 description: {
@@ -150,90 +109,63 @@ class ConditionalSwitchPlugin {
         // -- Config schema -----------------------------------------------------
 
         this.configSchema = {
-            // -- Condition 1 --
-            condition1_operator: {
-                type: 'select', label: { en: 'Condition 1 operator', de: 'Bedingung 1 Operator' },
-                options: OPERATOR_OPTIONS, sm: 4, newLine: true,
-            },
-            condition1_value: {
-                type: 'text', label: { en: 'Condition 1 value', de: 'Bedingung 1 Wert' },
-                sm: 4,
-            },
-            condition1_altValue: {
-                type: 'text', label: { en: 'Alt. value (modifier)', de: 'Alt. Wert (Modifier)' },
-                help: { en: 'Used when modifier is active. Leave empty to keep normal value.', de: 'Wird verwendet wenn Modifier aktiv. Leer = Normalwert.' },
-                sm: 4,
-            },
-
-            // -- Condition 2 --
-            condition2_operator: {
-                type: 'select', label: { en: 'Condition 2 operator', de: 'Bedingung 2 Operator' },
-                options: OPERATOR_OPTIONS, sm: 4, newLine: true,
-            },
-            condition2_value: {
-                type: 'text', label: { en: 'Condition 2 value', de: 'Bedingung 2 Wert' },
-                sm: 4,
-            },
-            condition2_altValue: {
-                type: 'text', label: { en: 'Alt. value (modifier)', de: 'Alt. Wert (Modifier)' },
-                sm: 4,
-            },
-
-            // -- Condition 3 --
-            condition3_operator: {
-                type: 'select', label: { en: 'Condition 3 operator', de: 'Bedingung 3 Operator' },
-                options: OPERATOR_OPTIONS, sm: 4, newLine: true,
-            },
-            condition3_value: {
-                type: 'text', label: { en: 'Condition 3 value', de: 'Bedingung 3 Wert' },
-                sm: 4,
-            },
-            condition3_altValue: {
-                type: 'text', label: { en: 'Alt. value (modifier)', de: 'Alt. Wert (Modifier)' },
-                sm: 4,
+            conditions: {
+                type: 'table',
+                label: { en: 'Conditions (all must be true)', de: 'Bedingungen (alle müssen erfüllt sein)' },
+                items: [
+                    {
+                        type: 'text',
+                        title: { en: 'Object ID', de: 'Objekt-ID' },
+                        attr: 'objectId',
+                        filter: true,
+                        sort: true,
+                        default: '',
+                    },
+                    {
+                        type: 'select',
+                        title: { en: 'Operator', de: 'Operator' },
+                        attr: 'operator',
+                        options: OPERATOR_OPTIONS,
+                        default: '>',
+                    },
+                    {
+                        type: 'text',
+                        title: { en: 'Value', de: 'Wert' },
+                        attr: 'value',
+                        default: '',
+                    },
+                    {
+                        type: 'text',
+                        title: { en: 'Alt. value (modifier)', de: 'Alt. Wert (Modifier)' },
+                        attr: 'altValue',
+                        default: '',
+                    },
+                ],
+                sm: 12,
+                newLine: true,
             },
 
-            // -- Condition 4 --
-            condition4_operator: {
-                type: 'select', label: { en: 'Condition 4 operator', de: 'Bedingung 4 Operator' },
-                options: OPERATOR_OPTIONS, sm: 4, newLine: true,
-            },
-            condition4_value: {
-                type: 'text', label: { en: 'Condition 4 value', de: 'Bedingung 4 Wert' },
-                sm: 4,
-            },
-            condition4_altValue: {
-                type: 'text', label: { en: 'Alt. value (modifier)', de: 'Alt. Wert (Modifier)' },
-                sm: 4,
-            },
-
-            // -- Modifier --
             modifier_operator: {
-                type: 'select', label: { en: 'Modifier operator', de: 'Modifier Operator' },
-                options: OPERATOR_OPTIONS, sm: 6, newLine: true,
+                type: 'select',
+                label: { en: 'Modifier operator', de: 'Modifier Operator' },
+                options: OPERATOR_OPTIONS,
+                sm: 6, newLine: true,
             },
             modifier_value: {
-                type: 'text', label: { en: 'Modifier trigger value', de: 'Modifier Auslösewert' },
-                help: { en: 'When modifier input matches → alternative values are used', de: 'Wenn Modifier-Eingang zutrifft → Alternativwerte werden benutzt' },
+                type: 'text',
+                label: { en: 'Modifier trigger value', de: 'Modifier Auslösewert' },
+                help: {
+                    en: 'When modifier input matches → alternative values in table are used',
+                    de: 'Wenn Modifier-Eingang zutrifft → Alternativwerte in der Tabelle werden benutzt',
+                },
                 sm: 6,
-            },
-
-            // -- Hysteresis --
-            hysteresis: {
-                type: 'number',
-                label: { en: 'Hysteresis (for number conditions)', de: 'Hysterese (für Zahlenbedingungen)' },
-                help: { en: 'Prevents rapid on/off cycling for numeric thresholds', de: 'Verhindert schnelles Ein-/Ausschalten bei Zahlenschwellen' },
-                min: 0, max: 20,
             },
         };
 
         this.configDefaults = {
-            condition1_operator: '>', condition1_value: '', condition1_altValue: '',
-            condition2_operator: '==', condition2_value: '', condition2_altValue: '',
-            condition3_operator: '==', condition3_value: '', condition3_altValue: '',
-            condition4_operator: '==', condition4_value: '', condition4_altValue: '',
-            modifier_operator: '==', modifier_value: '',
-            hysteresis: 0,
+            conditions: [],
+            modifier_operator: '==',
+            modifier_value: '',
         };
 
         // -- Output states -----------------------------------------------------
@@ -278,14 +210,13 @@ class ConditionalSwitchPlugin {
             await ctx.setOutputState('enabled', true, true);
         }
 
-        // Do an initial evaluation
         await this._evaluate(ctx);
-
         ctx.log.info(`Conditional switch "${ctx.deviceId}" initialised`);
     }
 
     async onInputChange(ctx, inputId, state) {
         if (!state) return;
+        // Any input change (modifier, switch feedback, or dynamic condition) → re-evaluate
         await this._evaluate(ctx);
     }
 
@@ -293,23 +224,40 @@ class ConditionalSwitchPlugin {
         ctx.log.info(`Conditional switch "${ctx.deviceId}" destroyed`);
     }
 
+    /**
+     * Return objectIds from the conditions table that need foreign state subscriptions.
+     * Called by the main adapter during _startDevice.
+     *
+     * @param {Record<string, any>} config - device config
+     * @returns {Array<{ id: string, objectId: string }>}
+     */
+    getDynamicSubscriptions(config) {
+        const subs = [];
+        const conditions = config.conditions;
+        if (Array.isArray(conditions)) {
+            for (let i = 0; i < conditions.length; i++) {
+                const c = conditions[i];
+                if (c.objectId) {
+                    subs.push({ id: `_cond_${i}`, objectId: c.objectId });
+                }
+            }
+        }
+        return subs;
+    }
+
     // ======================================================================
     // Core evaluation
     // ======================================================================
 
-    /**
-     * Evaluate all conditions and set switches accordingly.
-     * @param {import('../lib/plugin-interface').PluginContext} ctx
-     */
     async _evaluate(ctx) {
         const enabled = await ctx.getOutputState('enabled');
         if (!enabled || enabled.val !== true) {
-            // Disabled → turn off
             await this._setSwitches(ctx, false);
+            await ctx.setOutputState('active', false, true);
             return;
         }
 
-        // 1. Check modifier state
+        // 1. Check modifier
         let modifierActive = false;
         if (ctx.inputs.modifier) {
             const modState = await ctx.getInputState('modifier');
@@ -321,42 +269,36 @@ class ConditionalSwitchPlugin {
         }
         await ctx.setOutputState('modifierActive', modifierActive, true);
 
-        // 2. Evaluate each condition
-        const conditionIds = ['condition1', 'condition2', 'condition3', 'condition4'];
+        // 2. Evaluate conditions from table
+        const conditions = ctx.config.conditions;
+        if (!Array.isArray(conditions) || conditions.length === 0) {
+            await this._setSwitches(ctx, false);
+            await ctx.setOutputState('active', false, true);
+            return;
+        }
+
         let allMet = true;
-        let anyConfigured = false;
+        for (let i = 0; i < conditions.length; i++) {
+            const cond = conditions[i];
+            if (!cond.objectId || !cond.operator || (cond.value === '' && cond.value === undefined)) {
+                continue; // skip incomplete rows
+            }
 
-        for (const condId of conditionIds) {
-            if (!ctx.inputs[condId]) continue;
-
-            const op = ctx.config[`${condId}_operator`];
-            const valStr = ctx.config[`${condId}_value`];
-            if (!op || valStr === '' || valStr === undefined) continue;
-
-            anyConfigured = true;
-            const state = await ctx.getInputState(condId);
+            // Read state via dynamic subscription input id
+            const inputId = `_cond_${i}`;
+            const state = await ctx.getInputState(inputId);
             if (state?.val === null || state?.val === undefined) {
                 allMet = false;
                 continue;
             }
 
-            // Use alternative value if modifier is active and altValue is set
-            const altValStr = ctx.config[`${condId}_altValue`];
-            const useAlt = modifierActive && altValStr !== '' && altValStr !== undefined;
-            const targetStr = useAlt ? altValStr : valStr;
+            const useAlt = modifierActive && cond.altValue !== '' && cond.altValue !== undefined;
+            const targetStr = useAlt ? cond.altValue : cond.value;
             const target = parseValue(state.val, targetStr);
 
-            const met = evaluate(state.val, op, target);
-            if (!met) {
+            if (!evaluate(state.val, cond.operator, target)) {
                 allMet = false;
             }
-        }
-
-        // No conditions configured → don't activate
-        if (!anyConfigured) {
-            await this._setSwitches(ctx, false);
-            await ctx.setOutputState('active', false, true);
-            return;
         }
 
         const currentActive = await ctx.getOutputState('active');
@@ -373,11 +315,6 @@ class ConditionalSwitchPlugin {
         }
     }
 
-    /**
-     * Set the physical output switches.
-     * @param {import('../lib/plugin-interface').PluginContext} ctx
-     * @param {boolean} on
-     */
     async _setSwitches(ctx, on) {
         if (ctx.inputs.switch1) {
             await ctx.adapter.setForeignStateAsync(ctx.inputs.switch1, on, false);
