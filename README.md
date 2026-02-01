@@ -217,6 +217,9 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.1.6 (2025-02-01)
+- Fix: control label "Automatic control" instead of generic "Enabled"
+
 ### 0.1.5 (2025-02-01)
 - Fix: UX — controls show description (what the switch does)
 - Fix: UX — device details show labeled values (`<b>Label:</b> Value`)
