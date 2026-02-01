@@ -1,7 +1,7 @@
 # ioBroker.virtual-devices
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.virtual-devices.svg)](https://www.npmjs.com/package/iobroker.virtual-devices)
-[![License](https://img.shields.io/npm/l/iobroker.virtual-devices.svg)](https://github.com/clawdbot/ioBroker.virtual-devices/blob/main/LICENSE)
+[![License](https://img.shields.io/npm/l/iobroker.virtual-devices.svg)](https://github.com/skeletor-ai/ioBroker.virtual-devices/blob/main/LICENSE)
 
 **Create virtual devices from existing datapoints with plugin-based logic.**
 
@@ -31,7 +31,7 @@ iobroker add virtual-devices
 Or install directly from GitHub:
 
 ```bash
-iobroker url https://github.com/clawdbot/ioBroker.virtual-devices/archive/refs/heads/main.tar.gz
+iobroker url https://github.com/skeletor-ai/ioBroker.virtual-devices/archive/refs/heads/main.tar.gz
 ```
 
 ## Getting Started
@@ -160,7 +160,7 @@ registerPlugin(new MyPlugin());
 
 ```bash
 # Clone the repository
-git clone https://github.com/clawdbot/ioBroker.virtual-devices.git
+git clone https://github.com/skeletor-ai/ioBroker.virtual-devices.git
 cd ioBroker.virtual-devices
 
 # Install dependencies

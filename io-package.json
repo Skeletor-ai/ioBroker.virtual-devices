@@ -30,7 +30,7 @@
       "zh-cn": "Create virtual devices from existing datapoints with plugin-based logic"
     },
     "authors": [
-      "Clawdbot"
+      "skeletor-ai"
     ],
     "keywords": [
       "virtual",
@@ -44,7 +44,7 @@
     "main": "lib/main.js",
     "icon": "virtual-devices.png",
     "enabled": true,
-    "extIcon": "https://raw.githubusercontent.com/clawdbot/ioBroker.virtual-devices/main/admin/virtual-devices.png",
+    "extIcon": "https://raw.githubusercontent.com/skeletor-ai/ioBroker.virtual-devices/main/admin/virtual-devices.png",
     "type": "general",
     "connectionType": "local",
     "dataSource": "push",

@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "description": "Create virtual devices from existing datapoints with plugin-based logic",
   "author": {
-    "name": "Clawdbot",
+    "name": "skeletor-ai",
     "email": ""
   },
-  "homepage": "https://github.com/clawdbot/ioBroker.virtual-devices",
+  "homepage": "https://github.com/skeletor-ai/ioBroker.virtual-devices",
   "license": "MIT",
   "keywords": [
     "ioBroker",
@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/clawdbot/ioBroker.virtual-devices.git"
+    "url": "https://github.com/skeletor-ai/ioBroker.virtual-devices.git"
   },
   "engines": {
     "node": ">= 18"
