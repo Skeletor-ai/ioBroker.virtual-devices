@@ -217,6 +217,10 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.3.2 (2025-02-01)
+- Fix: schedule time fields changed from free text to select dropdowns
+- 48 fixed time slots (every 30 min), no invalid input possible
+
 ### 0.3.1 (2025-02-01)
 - Fix: schedule fields side-by-side (from|until per row) with grid layout
 - Added schedule section header

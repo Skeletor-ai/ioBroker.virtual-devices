@@ -47,6 +47,19 @@ function getRuntime(deviceId) {
 }
 
 // ---------------------------------------------------------------------------
+// Time slot options for schedule selects (every 30 min)
+// ---------------------------------------------------------------------------
+
+/** @type {{ label: string, value: string }[]} */
+const TIME_OPTIONS = [{ label: '—', value: '' }];
+for (let h = 0; h < 24; h++) {
+    for (const m of [0, 30]) {
+        const t = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        TIME_OPTIONS.push({ label: t, value: t });
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Plugin implementation
 // ---------------------------------------------------------------------------
 
@@ -152,20 +165,20 @@ class SmartDehumidifierPlugin {
                 min: 10,
                 max: 600,
             },
-            scheduleMonStart: { type: 'text', label: { en: 'Mon from', de: 'Mo von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleMonEnd:   { type: 'text', label: { en: 'Mon until', de: 'Mo bis' }, maxLength: 5, sm: 6 },
-            scheduleTueStart: { type: 'text', label: { en: 'Tue from', de: 'Di von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleTueEnd:   { type: 'text', label: { en: 'Tue until', de: 'Di bis' }, maxLength: 5, sm: 6 },
-            scheduleWedStart: { type: 'text', label: { en: 'Wed from', de: 'Mi von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleWedEnd:   { type: 'text', label: { en: 'Wed until', de: 'Mi bis' }, maxLength: 5, sm: 6 },
-            scheduleThuStart: { type: 'text', label: { en: 'Thu from', de: 'Do von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleThuEnd:   { type: 'text', label: { en: 'Thu until', de: 'Do bis' }, maxLength: 5, sm: 6 },
-            scheduleFriStart: { type: 'text', label: { en: 'Fri from', de: 'Fr von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleFriEnd:   { type: 'text', label: { en: 'Fri until', de: 'Fr bis' }, maxLength: 5, sm: 6 },
-            scheduleSatStart: { type: 'text', label: { en: 'Sat from', de: 'Sa von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleSatEnd:   { type: 'text', label: { en: 'Sat until', de: 'Sa bis' }, maxLength: 5, sm: 6 },
-            scheduleSunStart: { type: 'text', label: { en: 'Sun from', de: 'So von' }, maxLength: 5, sm: 6, newLine: true },
-            scheduleSunEnd:   { type: 'text', label: { en: 'Sun until', de: 'So bis' }, maxLength: 5, sm: 6 },
+            scheduleMonStart: { type: 'select', label: { en: 'Mon from', de: 'Mo von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleMonEnd:   { type: 'select', label: { en: 'Mon until', de: 'Mo bis' }, options: TIME_OPTIONS, sm: 6 },
+            scheduleTueStart: { type: 'select', label: { en: 'Tue from', de: 'Di von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleTueEnd:   { type: 'select', label: { en: 'Tue until', de: 'Di bis' }, options: TIME_OPTIONS, sm: 6 },
+            scheduleWedStart: { type: 'select', label: { en: 'Wed from', de: 'Mi von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleWedEnd:   { type: 'select', label: { en: 'Wed until', de: 'Mi bis' }, options: TIME_OPTIONS, sm: 6 },
+            scheduleThuStart: { type: 'select', label: { en: 'Thu from', de: 'Do von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleThuEnd:   { type: 'select', label: { en: 'Thu until', de: 'Do bis' }, options: TIME_OPTIONS, sm: 6 },
+            scheduleFriStart: { type: 'select', label: { en: 'Fri from', de: 'Fr von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleFriEnd:   { type: 'select', label: { en: 'Fri until', de: 'Fr bis' }, options: TIME_OPTIONS, sm: 6 },
+            scheduleSatStart: { type: 'select', label: { en: 'Sat from', de: 'Sa von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleSatEnd:   { type: 'select', label: { en: 'Sat until', de: 'Sa bis' }, options: TIME_OPTIONS, sm: 6 },
+            scheduleSunStart: { type: 'select', label: { en: 'Sun from', de: 'So von' }, options: TIME_OPTIONS, sm: 6, newLine: true },
+            scheduleSunEnd:   { type: 'select', label: { en: 'Sun until', de: 'So bis' }, options: TIME_OPTIONS, sm: 6 },
         };
 
         /** @type {Record<string, any>} */
