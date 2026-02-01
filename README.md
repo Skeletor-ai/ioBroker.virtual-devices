@@ -217,6 +217,9 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.1.4 (2025-02-01)
+- Fix: device controls need handler + getStateHandler (dm-utils requirement)
+
 ### 0.1.3 (2025-02-01)
 - Fix: objectId picker — customFilter without top-level type, roles as array
 

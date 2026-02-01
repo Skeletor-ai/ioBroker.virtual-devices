@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "virtual-devices",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "title": "Virtual Devices",
     "titleLang": {
       "en": "Virtual Devices",
