@@ -217,6 +217,9 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.1.7 (2025-02-01)
+- Fix: control uses channel grouping for visible description
+
 ### 0.1.6 (2025-02-01)
 - Fix: control label "Automatic control" instead of generic "Enabled"
 
