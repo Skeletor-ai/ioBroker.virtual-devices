@@ -360,6 +360,35 @@ tests.unit(path.join(__dirname, '..'), {
                 assert.strictEqual(states.running, true, 'Should turn on with empty schedule (24/7)');
                 await plugin.onDestroy(ctx);
             });
+
+            it('should not turn on when today is disabled in schedule', async () => {
+                const { SmartDehumidifierPlugin } = require('../plugins/smart-dehumidifier');
+                const plugin = new SmartDehumidifierPlugin();
+                const states = {};
+
+                // Disable all days → should never run
+                const ctx = {
+                    deviceId: 'test-dehum-schedule-3',
+                    config: {
+                        targetHumidity: 55, humidityHysteresis: 3,
+                        tankFullPowerThreshold: 5, tankFullDelay: 60,
+                        scheduleStart: '', scheduleEnd: '',
+                        scheduleMon: false, scheduleTue: false, scheduleWed: false,
+                        scheduleThu: false, scheduleFri: false, scheduleSat: false, scheduleSun: false,
+                    },
+                    inputs: { humiditySensor: 'sensor.0.humidity', powerSwitch: 'switch.0.power' },
+                    getInputState: async () => null,
+                    setOutputState: async (id, val) => { states[id] = val; },
+                    getOutputState: async (id) => (states[id] !== undefined ? { val: states[id] } : null),
+                    log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+                    adapter: { setForeignStateAsync: async () => {} },
+                };
+
+                await plugin.onInit(ctx);
+                await plugin.onInputChange(ctx, 'humiditySensor', { val: 80, ack: true, ts: Date.now(), lc: Date.now(), from: 'test', q: 0 });
+                assert.strictEqual(states.running, false, 'Should NOT turn on when all days disabled');
+                await plugin.onDestroy(ctx);
+            });
         });
     },
 });

@@ -170,6 +170,34 @@ class SmartDehumidifierPlugin {
                 },
                 maxLength: 5,
             },
+            scheduleMon: {
+                type: 'checkbox',
+                label: { en: 'Monday', de: 'Montag' },
+            },
+            scheduleTue: {
+                type: 'checkbox',
+                label: { en: 'Tuesday', de: 'Dienstag' },
+            },
+            scheduleWed: {
+                type: 'checkbox',
+                label: { en: 'Wednesday', de: 'Mittwoch' },
+            },
+            scheduleThu: {
+                type: 'checkbox',
+                label: { en: 'Thursday', de: 'Donnerstag' },
+            },
+            scheduleFri: {
+                type: 'checkbox',
+                label: { en: 'Friday', de: 'Freitag' },
+            },
+            scheduleSat: {
+                type: 'checkbox',
+                label: { en: 'Saturday', de: 'Samstag' },
+            },
+            scheduleSun: {
+                type: 'checkbox',
+                label: { en: 'Sunday', de: 'Sonntag' },
+            },
         };
 
         /** @type {Record<string, any>} */
@@ -180,6 +208,13 @@ class SmartDehumidifierPlugin {
             tankFullDelay: 60,
             scheduleStart: '',
             scheduleEnd: '',
+            scheduleMon: true,
+            scheduleTue: true,
+            scheduleWed: true,
+            scheduleThu: true,
+            scheduleFri: true,
+            scheduleSat: true,
+            scheduleSun: true,
         };
 
         // -- Output states -----------------------------------------------------
@@ -374,7 +409,18 @@ class SmartDehumidifierPlugin {
         const startStr = String(ctx.config.scheduleStart || '').trim();
         const endStr = String(ctx.config.scheduleEnd || '').trim();
 
-        // No schedule configured → always allowed
+        // Day-of-week check: map JS getDay() (0=Sun..6=Sat) to config keys
+        const dayKeys = ['scheduleSun', 'scheduleMon', 'scheduleTue', 'scheduleWed', 'scheduleThu', 'scheduleFri', 'scheduleSat'];
+        const now = new Date();
+        const todayKey = dayKeys[now.getDay()];
+
+        // If all days are true (or unset) → no day restriction
+        const anyDayConfigured = dayKeys.some((k) => ctx.config[k] === false);
+        if (anyDayConfigured) {
+            if (ctx.config[todayKey] === false) return false;
+        }
+
+        // No time schedule configured → allowed (day check already passed)
         if (!startStr || !endStr) return true;
 
         const match = (s) => s.match(/^(\d{1,2}):(\d{2})$/);
@@ -382,7 +428,6 @@ class SmartDehumidifierPlugin {
         const endMatch = match(endStr);
         if (!startMatch || !endMatch) return true; // invalid format → allow
 
-        const now = new Date();
         const currentMin = now.getHours() * 60 + now.getMinutes();
         const startMin = parseInt(startMatch[1], 10) * 60 + parseInt(startMatch[2], 10);
         const endMin = parseInt(endMatch[1], 10) * 60 + parseInt(endMatch[2], 10);

@@ -217,6 +217,11 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
+### 0.2.1 (2025-02-01)
+- Feature: weekday selection for schedule (Mon–Sun checkboxes)
+- All days enabled by default
+- Combines with time window: day must be enabled AND time must match
+
 ### 0.2.0 (2025-02-01)
 - Feature: schedule window for dehumidifier (allowed from/until HH:MM)
 - Supports overnight windows (e.g. 22:00–06:00)
