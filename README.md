@@ -217,7 +217,13 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 
 ## Changelog
 
-### 0.1.0 (2024-xx-xx)
+### 0.1.2 (2025-02-01)
+- Fix: objectId picker filter logic (customFilter → filterFunc)
+- Fix: Device Manager embedded as JSONConfig tab (deviceManager component)
+- Fix: author and GitHub URLs corrected to skeletor-ai
+- Fix: dm property name to `deviceManagement` (dm-utils convention)
+
+### 0.1.0 (2025-02-01)
 - Initial release
 - Plugin system architecture
 - Smart Dehumidifier plugin
