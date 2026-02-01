@@ -1,0 +1,50 @@
+{
+  "name": "iobroker.virtual-devices",
+  "version": "0.1.0",
+  "description": "Create virtual devices from existing datapoints with plugin-based logic",
+  "author": {
+    "name": "Clawdbot",
+    "email": ""
+  },
+  "homepage": "https://github.com/clawdbot/ioBroker.virtual-devices",
+  "license": "MIT",
+  "keywords": [
+    "ioBroker",
+    "virtual",
+    "devices",
+    "automation",
+    "device-manager",
+    "plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clawdbot/ioBroker.virtual-devices.git"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.3.2",
+    "@iobroker/dm-utils": "^2.0.1"
+  },
+  "devDependencies": {
+    "@iobroker/dev-server": "^0.8.0",
+    "@iobroker/testing": "^5.2.2",
+    "chai": "^4.5.0",
+    "eslint": "^9.15.0",
+    "mocha": "^11.7.5"
+  },
+  "main": "lib/main.js",
+  "files": [
+    "admin/",
+    "lib/",
+    "plugins/",
+    "io-package.json",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "mocha --exit --timeout 10000 test/unit.js",
+    "lint": "eslint lib/ plugins/",
+    "dev-server": "dev-server"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "common": {
+    "name": "virtual-devices",
+    "version": "0.1.0",
+    "title": "Virtual Devices",
+    "titleLang": {
+      "en": "Virtual Devices",
+      "de": "Virtuelle Geräte",
+      "ru": "Virtual Devices",
+      "pt": "Virtual Devices",
+      "nl": "Virtual Devices",
+      "fr": "Virtual Devices",
+      "it": "Virtual Devices",
+      "es": "Virtual Devices",
+      "pl": "Virtual Devices",
+      "uk": "Virtual Devices",
+      "zh-cn": "Virtual Devices"
+    },
+    "desc": {
+      "en": "Create virtual devices from existing datapoints with plugin-based logic",
+      "de": "Erstelle virtuelle Geräte aus bestehenden Datenpunkten mit Plugin-basierter Logik",
+      "ru": "Create virtual devices from existing datapoints with plugin-based logic",
+      "pt": "Create virtual devices from existing datapoints with plugin-based logic",
+      "nl": "Create virtual devices from existing datapoints with plugin-based logic",
+      "fr": "Create virtual devices from existing datapoints with plugin-based logic",
+      "it": "Create virtual devices from existing datapoints with plugin-based logic",
+      "es": "Create virtual devices from existing datapoints with plugin-based logic",
+      "pl": "Create virtual devices from existing datapoints with plugin-based logic",
+      "uk": "Create virtual devices from existing datapoints with plugin-based logic",
+      "zh-cn": "Create virtual devices from existing datapoints with plugin-based logic"
+    },
+    "authors": [
+      "Clawdbot"
+    ],
+    "keywords": [
+      "virtual",
+      "devices",
+      "automation",
+      "plugin",
+      "device-manager"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "lib/main.js",
+    "icon": "virtual-devices.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/clawdbot/ioBroker.virtual-devices/main/admin/virtual-devices.png",
+    "type": "general",
+    "connectionType": "local",
+    "dataSource": "push",
+    "tier": 3,
+    "compact": true,
+    "adminUI": {
+      "config": "json"
+    },
+    "supportedMessages": {
+      "messagebox": true,
+      "deviceManager": true
+    },
+    "mode": "daemon",
+    "messagebox": true,
+    "dependencies": [
+      {
+        "js-controller": ">=5.0.0"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=6.13.16"
+      }
+    ]
+  },
+  "native": {},
+  "objects": [],
+  "instanceObjects": []
+}

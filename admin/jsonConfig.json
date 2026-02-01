@@ -1,0 +1,26 @@
+{
+  "i18n": true,
+  "type": "panel",
+  "items": {
+    "info": {
+      "type": "staticText",
+      "text": "infoText",
+      "style": {
+        "fontSize": 16,
+        "marginTop": 20,
+        "marginBottom": 20
+      }
+    },
+    "divider1": {
+      "type": "divider"
+    },
+    "hint": {
+      "type": "staticText",
+      "text": "hintText",
+      "style": {
+        "fontSize": 13,
+        "color": "#888"
+      }
+    }
+  }
+}
