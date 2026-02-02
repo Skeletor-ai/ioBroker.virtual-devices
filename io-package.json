@@ -62,11 +62,29 @@
     "news": {
       "0.7.0": {
         "en": "Plugin-based architecture for virtual device types",
-        "de": "Plugin-basierte Architektur für virtuelle Gerätetypen"
+        "de": "Plugin-basierte Architektur für virtuelle Gerätetypen",
+        "ru": "Plugin-based architecture for virtual device types",
+        "pt": "Plugin-based architecture for virtual device types",
+        "nl": "Plugin-based architecture for virtual device types",
+        "fr": "Plugin-based architecture for virtual device types",
+        "it": "Plugin-based architecture for virtual device types",
+        "es": "Plugin-based architecture for virtual device types",
+        "pl": "Plugin-based architecture for virtual device types",
+        "uk": "Plugin-based architecture for virtual device types",
+        "zh-cn": "Plugin-based architecture for virtual device types"
       },
       "0.1.0": {
         "en": "Initial release",
-        "de": "Erstveröffentlichung"
+        "de": "Erstveröffentlichung",
+        "ru": "Initial release",
+        "pt": "Initial release",
+        "nl": "Initial release",
+        "fr": "Initial release",
+        "it": "Initial release",
+        "es": "Initial release",
+        "pl": "Initial release",
+        "uk": "Initial release",
+        "zh-cn": "Initial release"
       }
     },
     "dependencies": [
