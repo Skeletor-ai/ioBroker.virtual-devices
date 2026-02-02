@@ -2,7 +2,6 @@
   "common": {
     "name": "virtual-devices",
     "version": "0.7.0",
-    "title": "Virtual Devices",
     "titleLang": {
       "en": "Virtual Devices",
       "de": "Virtuelle Geräte",
@@ -30,7 +29,7 @@
       "zh-cn": "Create virtual devices from existing datapoints with plugin-based logic"
     },
     "authors": [
-      "skeletor-ai"
+      "Skeletor-ai"
     ],
     "keywords": [
       "virtual",
@@ -39,12 +38,14 @@
       "plugin",
       "device-manager"
     ],
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
-    "main": "lib/main.js",
     "icon": "virtual-devices.png",
     "enabled": true,
-    "extIcon": "https://raw.githubusercontent.com/skeletor-ai/ioBroker.virtual-devices/main/admin/virtual-devices.png",
+    "extIcon": "https://raw.githubusercontent.com/Skeletor-ai/ioBroker.virtual-devices/main/admin/virtual-devices.png",
     "type": "general",
     "connectionType": "local",
     "dataSource": "push",
@@ -54,19 +55,28 @@
       "config": "json"
     },
     "supportedMessages": {
-      "messagebox": true,
       "deviceManager": true
     },
-    "mode": "daemon",
     "messagebox": true,
+    "mode": "daemon",
+    "news": {
+      "0.7.0": {
+        "en": "Plugin-based architecture for virtual device types",
+        "de": "Plugin-basierte Architektur für virtuelle Gerätetypen"
+      },
+      "0.1.0": {
+        "en": "Initial release",
+        "de": "Erstveröffentlichung"
+      }
+    },
     "dependencies": [
       {
-        "js-controller": ">=5.0.0"
+        "js-controller": ">=5.0.19"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=6.13.16"
+        "admin": ">=6.17.14"
       }
     ]
   },
