@@ -410,6 +410,8 @@ class SmartDehumidifierPlugin {
         const todayStart = String(ctx.config[`${todayPrefix}Start`] || '').trim();
         const todayEnd = String(ctx.config[`${todayPrefix}End`] || '').trim();
 
+        ctx.log.debug(`Schedule check: day=${now.getDay()} (${todayPrefix}), start="${todayStart}", end="${todayEnd}", time=${now.getHours()}:${now.getMinutes()}`);
+
         // Check if ANY day has a schedule configured
         const anyDayConfigured = dayPrefixes.some((prefix) => {
             const s = String(ctx.config[`${prefix}Start`] || '').trim();
@@ -450,15 +452,23 @@ class SmartDehumidifierPlugin {
         await ctx.setOutputState('humidity', humidity, true);
 
         const enabled = await ctx.getOutputState('enabled');
-        if (!enabled || enabled.val !== true) return;
+        if (!enabled || enabled.val !== true) {
+            ctx.log.debug(`Humidity change ignored: enabled=${enabled?.val}`);
+            return;
+        }
 
         const tankFull = await ctx.getOutputState('tankFull');
-        if (tankFull?.val === true) return;
+        if (tankFull?.val === true) {
+            ctx.log.debug(`Humidity change ignored: tankFull=true`);
+            return;
+        }
 
         const target = Number(ctx.config.targetHumidity ?? 55);
         const hysteresis = Number(ctx.config.humidityHysteresis ?? 3);
         const rt = getRuntime(ctx.deviceId);
         const inSchedule = this._isWithinSchedule(ctx);
+
+        ctx.log.debug(`Humidity check: ${humidity}% vs ${target}+${hysteresis}=${target + hysteresis}%, commandedOn=${rt.commandedOn}, inSchedule=${inSchedule}`);
 
         if (humidity > target + hysteresis && !rt.commandedOn && inSchedule) {
             ctx.log.info(`Humidity ${humidity}% > ${target + hysteresis}% — turning ON`);
