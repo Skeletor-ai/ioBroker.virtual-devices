@@ -354,13 +354,21 @@ class SmartDehumidifierPlugin {
             if (rt.lowPowerSince === null) {
                 rt.lowPowerSince = Date.now();
             } else if (Date.now() - rt.lowPowerSince >= delay) {
-                // Tank is full
-                ctx.log.warn(`Tank full detected for "${ctx.deviceId}" — power ${power}W below ${threshold}W for >${ctx.config.tankFullDelay}s`);
-                await ctx.setOutputState('tankFull', true, true);
-                await this._setSwitchState(ctx, false);
+                // Tank is full — set indicator only, do not turn off
+                const currentTankFull = await ctx.getOutputState('tankFull');
+                if (!currentTankFull?.val) {
+                    ctx.log.warn(`Tank full detected for "${ctx.deviceId}" — power ${power}W below ${threshold}W for >${ctx.config.tankFullDelay}s`);
+                    await ctx.setOutputState('tankFull', true, true);
+                }
             }
         } else {
             rt.lowPowerSince = null;
+            // Reset tankFull when power returns to normal
+            const currentTankFull = await ctx.getOutputState('tankFull');
+            if (currentTankFull?.val === true) {
+                ctx.log.info(`Tank full cleared for "${ctx.deviceId}" — power back above threshold`);
+                await ctx.setOutputState('tankFull', false, true);
+            }
         }
     }
 
@@ -457,11 +465,7 @@ class SmartDehumidifierPlugin {
             return;
         }
 
-        const tankFull = await ctx.getOutputState('tankFull');
-        if (tankFull?.val === true) {
-            ctx.log.debug(`Humidity change ignored: tankFull=true`);
-            return;
-        }
+        // tankFull is now indicator-only, does not block control logic
 
         const target = Number(ctx.config.targetHumidity ?? 55);
         const hysteresis = Number(ctx.config.humidityHysteresis ?? 3);
