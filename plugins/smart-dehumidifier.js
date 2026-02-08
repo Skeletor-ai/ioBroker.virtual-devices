@@ -291,6 +291,11 @@ class SmartDehumidifierPlugin {
             this.onInterval(ctx).catch((e) => ctx.log.error(`Interval error: ${e}`));
         }, 10_000);
 
+        // Evaluate initial humidity to turn on if already above threshold
+        if (humState?.val !== null && humState?.val !== undefined) {
+            await this._handleHumidityChange(ctx, Number(humState.val));
+        }
+
         ctx.log.info(`Smart dehumidifier "${ctx.deviceId}" initialised`);
     }
 
