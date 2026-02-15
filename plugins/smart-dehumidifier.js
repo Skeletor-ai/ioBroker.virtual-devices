@@ -238,6 +238,21 @@ class SmartDehumidifierPlugin {
                 write: false,
             },
             {
+                id: 'targetHumidity',
+                name: { en: 'Target Humidity', de: 'Ziel-Luftfeuchtigkeit' },
+                description: {
+                    en: 'Target humidity level in percent',
+                    de: 'Ziel-Luftfeuchtigkeit in Prozent',
+                },
+                type: 'number',
+                role: 'level.humidity',
+                unit: '%',
+                read: true,
+                write: true,
+                min: 30,
+                max: 80,
+            },
+            {
                 id: 'enabled',
                 name: { en: 'Automatic control', de: 'Automatische Steuerung' },
                 description: {
@@ -273,6 +288,12 @@ class SmartDehumidifierPlugin {
         const enabledState = await ctx.getOutputState('enabled');
         if (enabledState === null || enabledState.val === null) {
             await ctx.setOutputState('enabled', true, true);
+        }
+
+        // Initialise targetHumidity output from config
+        const targetHumidityState = await ctx.getOutputState('targetHumidity');
+        if (targetHumidityState === null || targetHumidityState.val === null) {
+            await ctx.setOutputState('targetHumidity', Number(ctx.config.targetHumidity ?? 55), true);
         }
 
         // Read current input values to initialise outputs
@@ -467,7 +488,11 @@ class SmartDehumidifierPlugin {
 
         // tankFull is now indicator-only, does not block control logic
 
-        const target = Number(ctx.config.targetHumidity ?? 55);
+        // Prefer runtime targetHumidity output state over config (allows Alexa/Google Home control)
+        const targetState = await ctx.getOutputState('targetHumidity');
+        const target = (targetState?.val !== null && targetState?.val !== undefined)
+            ? Number(targetState.val)
+            : Number(ctx.config.targetHumidity ?? 55);
         const hysteresis = Number(ctx.config.humidityHysteresis ?? 3);
         const rt = getRuntime(ctx.deviceId);
         const inSchedule = this._isWithinSchedule(ctx);
