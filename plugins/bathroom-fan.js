@@ -58,6 +58,22 @@ function getRuntime(deviceId) {
  * @param {any} expected
  * @returns {boolean}
  */
+/**
+ * Parse a config value string into its native type.
+ * 'true'/'false' → boolean, numeric strings → number, otherwise string as-is.
+ * @param {any} val
+ * @returns {any}
+ */
+function parseConfigValue(val) {
+    if (val === '' || val === null || val === undefined) return val;
+    const s = String(val).trim().toLowerCase();
+    if (s === 'true') return true;
+    if (s === 'false') return false;
+    const n = Number(val);
+    if (!isNaN(n) && String(val).trim() !== '') return n;
+    return String(val);
+}
+
 function looseEquals(actual, expected) {
     // eslint-disable-next-line eqeqeq
     if (actual == expected) return true;
@@ -170,23 +186,23 @@ class BathroomFanPlugin {
                 max: 20,
             },
             fanOnValue: {
-                type: 'number',
+                type: 'text',
                 label: { en: 'Fan ON value (command)', de: 'Lüfter AN Wert (Befehl)' },
             },
             fanOffValue: {
-                type: 'number',
+                type: 'text',
                 label: { en: 'Fan OFF value (command)', de: 'Lüfter AUS Wert (Befehl)' },
             },
             fanSpeedValue: {
-                type: 'number',
+                type: 'text',
                 label: { en: 'Fan speed value (optional, for humidity)', de: 'Lüfter Drehzahl-Wert (optional, für Feuchtigkeit)' },
             },
             statusOnValue: {
-                type: 'number',
+                type: 'text',
                 label: { en: 'Status ON value', de: 'Status AN Wert' },
             },
             statusOffValue: {
-                type: 'number',
+                type: 'text',
                 label: { en: 'Status OFF value', de: 'Status AUS Wert' },
             },
             presenceActiveValue: {
@@ -209,11 +225,11 @@ class BathroomFanPlugin {
         this.configDefaults = {
             humidityThreshold: 65,
             humidityHysteresis: 5,
-            fanOnValue: 1,
-            fanOffValue: 0,
+            fanOnValue: '1',
+            fanOffValue: '0',
             fanSpeedValue: '',
-            statusOnValue: 1,
-            statusOffValue: 0,
+            statusOnValue: '1',
+            statusOffValue: '0',
             presenceActiveValue: 'true',
             doorClosedValue: 'false',
             offDelay: 120,
@@ -433,11 +449,11 @@ class BathroomFanPlugin {
      */
     async _applyDesiredState(ctx) {
         const rt = getRuntime(ctx.deviceId);
-        const fanOnValue = Number(ctx.config.fanOnValue ?? 1);
-        const fanOffValue = Number(ctx.config.fanOffValue ?? 0);
+        const fanOnValue = parseConfigValue(ctx.config.fanOnValue ?? '1');
+        const fanOffValue = parseConfigValue(ctx.config.fanOffValue ?? '0');
         const fanSpeedRaw = ctx.config.fanSpeedValue;
         const hasSpeed = fanSpeedRaw !== '' && fanSpeedRaw !== null && fanSpeedRaw !== undefined;
-        const fanSpeedValue = hasSpeed ? Number(fanSpeedRaw) : null;
+        const fanSpeedValue = hasSpeed ? parseConfigValue(fanSpeedRaw) : null;
         const offDelay = Number(ctx.config.offDelay ?? 120) * 1000;
 
         // Determine desired value
@@ -446,9 +462,13 @@ class BathroomFanPlugin {
 
         if (rt.humidityTrigger && rt.presenceTrigger) {
             triggerName = 'both';
-            // Humidity gets speed, presence gets on — pick the higher value
+            // Humidity gets speed, presence gets on — pick the higher value (numeric) or humidity wins
             const humVal = fanSpeedValue !== null ? fanSpeedValue : fanOnValue;
-            desiredValue = Math.max(humVal, fanOnValue);
+            if (typeof humVal === 'number' && typeof fanOnValue === 'number') {
+                desiredValue = Math.max(humVal, fanOnValue);
+            } else {
+                desiredValue = humVal; // Non-numeric: humidity trigger takes priority
+            }
         } else if (rt.humidityTrigger) {
             triggerName = 'humidity';
             desiredValue = fanSpeedValue !== null ? fanSpeedValue : fanOnValue;
@@ -507,7 +527,7 @@ class BathroomFanPlugin {
             await ctx.adapter.setForeignStateAsync(ctx.inputs.fanCommand, value, false);
         }
 
-        const isOn = !looseEquals(value, ctx.config.fanOffValue ?? 0);
+        const isOn = !looseEquals(value, ctx.config.fanOffValue ?? '0');
         await ctx.setOutputState('active', isOn, true);
 
         ctx.log.info(`Fan command: ${value} (active=${isOn})`);
@@ -520,7 +540,7 @@ class BathroomFanPlugin {
      * @param {any} statusVal
      */
     async _updateActiveState(ctx, statusVal) {
-        const isOn = !looseEquals(statusVal, ctx.config.statusOffValue ?? 0);
+        const isOn = !looseEquals(statusVal, ctx.config.statusOffValue ?? '0');
         await ctx.setOutputState('active', isOn, true);
     }
 }
