@@ -16,8 +16,8 @@ This adapter lets you combine multiple existing ioBroker datapoints into logical
 
 ## Requirements
 
-- ioBroker >= 5.0.0
-- Admin >= 6.13.16 (for Device Manager support)
+- js-controller >= 6.0.11
+- Admin >= 7.6.17 (for Device Manager support)
 - Node.js >= 18
 
 ## Installation
@@ -78,6 +78,47 @@ Automatically controls a dehumidifier based on humidity readings, with tank-full
 - Turns OFF when humidity drops below target
 - Detects tank full when power consumption drops below threshold for the configured delay while the switch is commanded on
 - Re-enabling after tank-full resets the alarm
+
+### Bathroom Fan
+
+Automatic bathroom exhaust fan control based on humidity and presence detection.
+
+**Inputs:**
+| Input | Required | Description |
+|-------|----------|-------------|
+| Humidity Sensor | ✅ | Humidity sensor (role: `value.humidity`) |
+| Fan Command | ✅ | Command datapoint to control the fan (numeric, write) |
+| Fan Status | ✅ | Status datapoint reporting current fan state (numeric, read) |
+| Presence Sensor | ❌ | Presence/motion sensor |
+| Door Contact | ❌ | Door contact sensor |
+
+**Settings:**
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Humidity Threshold | 65% | Fan turns on above this |
+| Hysteresis | 5% | Fan turns off below threshold - hysteresis |
+| Fan ON value | 1 | Value sent to command datapoint to turn on |
+| Fan OFF value | 0 | Value sent to command datapoint to turn off |
+| Fan speed value | — | Optional higher speed value (used for humidity trigger) |
+| Status ON value | 1 | Status value meaning "running" |
+| Status OFF value | 0 | Status value meaning "off" |
+| Presence active value | true | Value meaning "presence detected" |
+| Door closed value | false | Value meaning "door is closed" |
+| Off delay | 120s | Fan keeps running after all triggers clear |
+
+**Output States:**
+| State | Type | Description |
+|-------|------|-------------|
+| `active` | boolean | Whether the fan is currently running |
+| `trigger` | string | Current trigger: `humidity`, `presence`, `both`, or `none` |
+| `enabled` | boolean | Enable/disable the automation (writable) |
+
+**Logic:**
+- Turns ON when humidity exceeds threshold (uses speed value if configured)
+- Turns ON when presence detected AND door closed (uses ON value)
+- When both triggers active, the higher command value wins
+- Off-delay prevents immediate shutdown after triggers clear
+- All actuator and sensor values are configurable (works with any numeric scheme)
 
 ## Writing Your Own Plugin
 
@@ -206,6 +247,29 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 | Tank-voll-Schwelle | 5W | Leistung unterhalb = Tank voll |
 | Tank-voll-Verzögerung | 60s | Wie lange die Leistung niedrig sein muss |
 
+#### Badlüfter
+
+Automatische Badlüfter-Steuerung über Feuchtigkeit und Präsenzerkennung.
+
+**Eingänge:**
+| Eingang | Erforderlich | Beschreibung |
+|---------|-------------|--------------|
+| Feuchtigkeitssensor | ✅ | Feuchtigkeitssensor (Rolle: `value.humidity`) |
+| Lüfter Befehl | ✅ | Befehls-Datenpunkt zum Steuern (numerisch, schreibend) |
+| Lüfter Status | ✅ | Status-Datenpunkt für Ist-Zustand (numerisch, lesend) |
+| Präsenzmelder | ❌ | Präsenz-/Bewegungsmelder |
+| Türkontakt | ❌ | Türkontakt-Sensor |
+
+**Einstellungen:**
+| Einstellung | Standard | Beschreibung |
+|-------------|----------|--------------|
+| Feuchtigkeitsschwelle | 65% | Lüfter schaltet oberhalb ein |
+| Hysterese | 5% | Lüfter schaltet unterhalb Schwelle - Hysterese aus |
+| Lüfter AN Wert | 1 | Wert für Einschalten |
+| Lüfter AUS Wert | 0 | Wert für Ausschalten |
+| Drehzahl-Wert | — | Optionaler Wert für erhöhte Drehzahl (Feuchtigkeit) |
+| Nachlaufzeit | 120s | Lüfter läuft nach Wegfall aller Trigger weiter |
+
 ### Benutzung
 
 1. Adapter installieren und aktivieren
@@ -216,6 +280,14 @@ Steuert automatisch einen Entfeuchter basierend auf Feuchtigkeitsmessungen mit T
 6. Das virtuelle Gerät arbeitet sofort
 
 ## Changelog
+
+### 0.7.1 (2026-02-27)
+- Feature: new Bathroom Fan plugin
+- Automatic fan control based on humidity threshold with hysteresis
+- Presence + door closed trigger (configurable active/closed values)
+- Configurable actuator values (command/status on/off/speed)
+- Off-delay (configurable rundown time after triggers clear)
+- Updated dependencies: js-controller >= 6.0.11, admin >= 7.6.17
 
 ### 0.7.0 (2026-02-01)
 - Breaking: flat object structure — `instanz → device → states`

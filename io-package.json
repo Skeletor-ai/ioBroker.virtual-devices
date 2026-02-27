@@ -1,104 +1,117 @@
 {
-  "common": {
-    "name": "virtual-devices",
-    "version": "0.7.1",
-    "titleLang": {
-      "en": "Virtual Devices",
-      "de": "Virtuelle Geräte",
-      "ru": "Virtual Devices",
-      "pt": "Virtual Devices",
-      "nl": "Virtual Devices",
-      "fr": "Virtual Devices",
-      "it": "Virtual Devices",
-      "es": "Virtual Devices",
-      "pl": "Virtual Devices",
-      "uk": "Virtual Devices",
-      "zh-cn": "Virtual Devices"
+    "common": {
+        "name": "virtual-devices",
+        "version": "0.7.1",
+        "titleLang": {
+            "en": "Virtual Devices",
+            "de": "Virtuelle Geräte",
+            "ru": "Virtual Devices",
+            "pt": "Virtual Devices",
+            "nl": "Virtual Devices",
+            "fr": "Virtual Devices",
+            "it": "Virtual Devices",
+            "es": "Virtual Devices",
+            "pl": "Virtual Devices",
+            "uk": "Virtual Devices",
+            "zh-cn": "Virtual Devices"
+        },
+        "desc": {
+            "en": "Create virtual devices from existing datapoints with plugin-based logic",
+            "de": "Erstelle virtuelle Geräte aus bestehenden Datenpunkten mit Plugin-basierter Logik",
+            "ru": "Create virtual devices from existing datapoints with plugin-based logic",
+            "pt": "Create virtual devices from existing datapoints with plugin-based logic",
+            "nl": "Create virtual devices from existing datapoints with plugin-based logic",
+            "fr": "Create virtual devices from existing datapoints with plugin-based logic",
+            "it": "Create virtual devices from existing datapoints with plugin-based logic",
+            "es": "Create virtual devices from existing datapoints with plugin-based logic",
+            "pl": "Create virtual devices from existing datapoints with plugin-based logic",
+            "uk": "Create virtual devices from existing datapoints with plugin-based logic",
+            "zh-cn": "Create virtual devices from existing datapoints with plugin-based logic"
+        },
+        "authors": [
+            "Skeletor-ai"
+        ],
+        "keywords": [
+            "virtual",
+            "devices",
+            "automation",
+            "plugin",
+            "device-manager"
+        ],
+        "licenseInformation": {
+            "license": "MIT",
+            "type": "free"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "virtual-devices.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/Skeletor-ai/ioBroker.virtual-devices/main/admin/virtual-devices.png",
+        "type": "general",
+        "connectionType": "local",
+        "dataSource": "push",
+        "tier": 3,
+        "compact": true,
+        "adminUI": {
+            "config": "json"
+        },
+        "supportedMessages": {
+            "deviceManager": true
+        },
+        "messagebox": true,
+        "mode": "daemon",
+        "news": {
+            "0.7.1": {
+                "en": "Added bathroom fan plugin with humidity and presence control",
+                "de": "Badlüfter-Plugin mit Feuchtigkeits- und Präsenzsteuerung hinzugefügt",
+                "ru": "Added bathroom fan plugin with humidity and presence control",
+                "pt": "Added bathroom fan plugin with humidity and presence control",
+                "nl": "Added bathroom fan plugin with humidity and presence control",
+                "fr": "Added bathroom fan plugin with humidity and presence control",
+                "it": "Added bathroom fan plugin with humidity and presence control",
+                "es": "Added bathroom fan plugin with humidity and presence control",
+                "pl": "Added bathroom fan plugin with humidity and presence control",
+                "uk": "Added bathroom fan plugin with humidity and presence control",
+                "zh-cn": "Added bathroom fan plugin with humidity and presence control"
+            },
+            "0.7.0": {
+                "en": "Plugin-based architecture for virtual device types",
+                "de": "Plugin-basierte Architektur für virtuelle Gerätetypen",
+                "ru": "Plugin-based architecture for virtual device types",
+                "pt": "Plugin-based architecture for virtual device types",
+                "nl": "Plugin-based architecture for virtual device types",
+                "fr": "Plugin-based architecture for virtual device types",
+                "it": "Plugin-based architecture for virtual device types",
+                "es": "Plugin-based architecture for virtual device types",
+                "pl": "Plugin-based architecture for virtual device types",
+                "uk": "Plugin-based architecture for virtual device types",
+                "zh-cn": "Plugin-based architecture for virtual device types"
+            },
+            "0.1.0": {
+                "en": "Initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Initial release",
+                "pt": "Initial release",
+                "nl": "Initial release",
+                "fr": "Initial release",
+                "it": "Initial release",
+                "es": "Initial release",
+                "pl": "Initial release",
+                "uk": "Initial release",
+                "zh-cn": "Initial release"
+            }
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.6.17"
+            }
+        ]
     },
-    "desc": {
-      "en": "Create virtual devices from existing datapoints with plugin-based logic",
-      "de": "Erstelle virtuelle Geräte aus bestehenden Datenpunkten mit Plugin-basierter Logik",
-      "ru": "Create virtual devices from existing datapoints with plugin-based logic",
-      "pt": "Create virtual devices from existing datapoints with plugin-based logic",
-      "nl": "Create virtual devices from existing datapoints with plugin-based logic",
-      "fr": "Create virtual devices from existing datapoints with plugin-based logic",
-      "it": "Create virtual devices from existing datapoints with plugin-based logic",
-      "es": "Create virtual devices from existing datapoints with plugin-based logic",
-      "pl": "Create virtual devices from existing datapoints with plugin-based logic",
-      "uk": "Create virtual devices from existing datapoints with plugin-based logic",
-      "zh-cn": "Create virtual devices from existing datapoints with plugin-based logic"
-    },
-    "authors": [
-      "Skeletor-ai"
-    ],
-    "keywords": [
-      "virtual",
-      "devices",
-      "automation",
-      "plugin",
-      "device-manager"
-    ],
-    "licenseInformation": {
-      "license": "MIT",
-      "type": "free"
-    },
-    "platform": "Javascript/Node.js",
-    "icon": "virtual-devices.png",
-    "enabled": true,
-    "extIcon": "https://raw.githubusercontent.com/Skeletor-ai/ioBroker.virtual-devices/main/admin/virtual-devices.png",
-    "type": "general",
-    "connectionType": "local",
-    "dataSource": "push",
-    "tier": 3,
-    "compact": true,
-    "adminUI": {
-      "config": "json"
-    },
-    "supportedMessages": {
-      "deviceManager": true
-    },
-    "messagebox": true,
-    "mode": "daemon",
-    "news": {
-      "0.7.0": {
-        "en": "Plugin-based architecture for virtual device types",
-        "de": "Plugin-basierte Architektur für virtuelle Gerätetypen",
-        "ru": "Plugin-based architecture for virtual device types",
-        "pt": "Plugin-based architecture for virtual device types",
-        "nl": "Plugin-based architecture for virtual device types",
-        "fr": "Plugin-based architecture for virtual device types",
-        "it": "Plugin-based architecture for virtual device types",
-        "es": "Plugin-based architecture for virtual device types",
-        "pl": "Plugin-based architecture for virtual device types",
-        "uk": "Plugin-based architecture for virtual device types",
-        "zh-cn": "Plugin-based architecture for virtual device types"
-      },
-      "0.1.0": {
-        "en": "Initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Initial release",
-        "pt": "Initial release",
-        "nl": "Initial release",
-        "fr": "Initial release",
-        "it": "Initial release",
-        "es": "Initial release",
-        "pl": "Initial release",
-        "uk": "Initial release",
-        "zh-cn": "Initial release"
-      }
-    },
-    "dependencies": [
-      {
-        "js-controller": ">=5.0.19"
-      }
-    ],
-    "globalDependencies": [
-      {
-        "admin": ">=6.17.14"
-      }
-    ]
-  },
-  "native": {},
-  "objects": [],
-  "instanceObjects": []
+    "native": {},
+    "objects": [],
+    "instanceObjects": []
 }
