@@ -236,6 +236,20 @@ class BathroomFanPlugin {
             offDelay: 120,
         };
 
+        // -- Action chain slots ------------------------------------------------
+
+        /** @type {Record<string, import('../lib/plugin-interface').ActionChainSlot>} */
+        this.actionChainSlots = {
+            on: {
+                name: { en: 'ON Chain', de: 'AN-Kette' },
+                description: { en: 'Commands to turn the fan on (executed sequentially)', de: 'Befehle zum Einschalten des Lüfters (sequentiell ausgeführt)' },
+            },
+            off: {
+                name: { en: 'OFF Chain', de: 'AUS-Kette' },
+                description: { en: 'Commands to turn the fan off (executed sequentially)', de: 'Befehle zum Ausschalten des Lüfters (sequentiell ausgeführt)' },
+            },
+        };
+
         // -- Output states -----------------------------------------------------
 
         /** @type {import('../lib/plugin-interface').OutputStateDefinition[]} */
@@ -564,20 +578,29 @@ class BathroomFanPlugin {
     /**
      * Build an action chain for the given target value.
      *
-     * Single fanCommand input → single-step chain (backward compatible).
-     * fanCommand + fanStatus → two-step chain with state wait confirmation.
+     * If user-configured chains exist (ctx.chains.on / ctx.chains.off),
+     * use those. Otherwise fall back to single-step fanCommand.
      *
      * @param {import('../lib/plugin-interface').PluginContext} ctx
      * @param {any} value
      * @returns {import('../lib/plugin-interface').ActionChain}
      */
     _buildChain(ctx, value) {
+        const fanOffValue = parseConfigValue(ctx.config.fanOffValue ?? '0');
+        const isOn = !looseEquals(value, fanOffValue);
+        const slotId = isOn ? 'on' : 'off';
+
+        // Use user-configured chain if available
+        if (ctx.chains && ctx.chains[slotId] && ctx.chains[slotId].length > 0) {
+            return ctx.chains[slotId];
+        }
+
+        // Fallback: single-step chain using fanCommand input
         /** @type {import('../lib/plugin-interface').ActionChain} */
         const chain = [];
 
         if (!ctx.inputs.fanCommand) return chain;
 
-        // Step 1: Set the fan command
         chain.push({
             objectId: ctx.inputs.fanCommand,
             value,
