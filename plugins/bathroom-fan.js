@@ -28,7 +28,8 @@
  * @property {boolean}     humidityTrigger  - Humidity condition is active.
  * @property {boolean}     presenceTrigger  - Presence+door condition is active.
  * @property {ReturnType<typeof setTimeout>|null} offTimer - Delayed-off timer handle.
- * @property {number|null} lastCommandValue - Last value written to fanCommand.
+ * @property {any}         lastCommandValue - Last value written to fanCommand.
+ * @property {import('../lib/action-chain').ActionChainExecutor|null} activeChainExecutor - Currently running chain.
  */
 
 /** @type {Map<string, FanRuntime>} */
@@ -41,7 +42,7 @@ const runtimeState = new Map();
 function getRuntime(deviceId) {
     let s = runtimeState.get(deviceId);
     if (!s) {
-        s = { humidityTrigger: false, presenceTrigger: false, offTimer: null, lastCommandValue: null };
+        s = { humidityTrigger: false, presenceTrigger: false, offTimer: null, lastCommandValue: null, activeChainExecutor: null };
         runtimeState.set(deviceId, s);
     }
     return s;
@@ -376,6 +377,9 @@ class BathroomFanPlugin {
         if (rt?.offTimer) {
             clearTimeout(rt.offTimer);
         }
+        if (rt?.activeChainExecutor) {
+            rt.activeChainExecutor.abort();
+        }
         runtimeState.delete(ctx.deviceId);
         ctx.log.info(`Bathroom fan "${ctx.deviceId}" destroyed`);
     }
@@ -511,19 +515,43 @@ class BathroomFanPlugin {
     }
 
     /**
-     * Write a value to the fan command datapoint.
+     * Build and execute an action chain to set the fan to the desired value.
+     *
+     * Uses `ctx.executeChain()` when available (plugin-interface level).
+     * Falls back to direct `setForeignStateAsync` for backward compatibility.
      *
      * @param {import('../lib/plugin-interface').PluginContext} ctx
-     * @param {number} value
+     * @param {any} value - The target command value.
      */
     async _sendFanCommand(ctx, value) {
         const rt = getRuntime(ctx.deviceId);
 
         if (rt.lastCommandValue === value) return; // No change needed
 
+        // Abort any running chain before starting a new one
+        if (rt.activeChainExecutor) {
+            rt.activeChainExecutor.abort();
+            rt.activeChainExecutor = null;
+        }
+
         rt.lastCommandValue = value;
 
-        if (ctx.inputs.fanCommand) {
+        const chain = this._buildChain(ctx, value);
+
+        if (chain.length > 0 && typeof ctx.executeChain === 'function') {
+            try {
+                rt.activeChainExecutor = await ctx.executeChain(chain);
+            } catch (e) {
+                if (e.message && e.message.includes('aborted')) {
+                    ctx.log.debug('Fan command chain was aborted');
+                    return;
+                }
+                ctx.log.error(`Fan command chain failed: ${e}`);
+            } finally {
+                rt.activeChainExecutor = null;
+            }
+        } else if (ctx.inputs.fanCommand) {
+            // Fallback: direct write (no chain support or single-step)
             await ctx.adapter.setForeignStateAsync(ctx.inputs.fanCommand, value, false);
         }
 
@@ -531,6 +559,31 @@ class BathroomFanPlugin {
         await ctx.setOutputState('active', isOn, true);
 
         ctx.log.info(`Fan command: ${value} (active=${isOn})`);
+    }
+
+    /**
+     * Build an action chain for the given target value.
+     *
+     * Single fanCommand input → single-step chain (backward compatible).
+     * fanCommand + fanStatus → two-step chain with state wait confirmation.
+     *
+     * @param {import('../lib/plugin-interface').PluginContext} ctx
+     * @param {any} value
+     * @returns {import('../lib/plugin-interface').ActionChain}
+     */
+    _buildChain(ctx, value) {
+        /** @type {import('../lib/plugin-interface').ActionChain} */
+        const chain = [];
+
+        if (!ctx.inputs.fanCommand) return chain;
+
+        // Step 1: Set the fan command
+        chain.push({
+            objectId: ctx.inputs.fanCommand,
+            value,
+        });
+
+        return chain;
     }
 
     /**
